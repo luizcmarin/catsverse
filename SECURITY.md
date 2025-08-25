@@ -1,21 +1,18 @@
-# Security Policy
+## Política de Segurança
 
-## Supported Versions
+Se você encontrou um problema de segurança relacionado ao CarolCRM, por favor, use o [email](mailto:luizcmarin@gmail.com) para nos relatar quaisquer problemas de segurança que você tenha encontrado.
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+> ***ATENÇÃO!*** NÃO utilize o rastreador de problemas ou discuta em fóruns públicos, pois isso causa mais dano do que ajuda.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+> Por favor, note que, como um projeto OpenSource não comercial, não somos capazes de pagar recompensas no momento.
 
-## Reporting a Vulnerability
+### Reportando uma Vulnerabilidade
 
-Use this section to tell people how to report a vulnerability.
+Para cada relatório, tentamos primeiro confirmar a vulnerabilidade.
+Uma vez confirmada, a equipe do CarolCRM tomará as seguintes ações:
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+* Informar ao repórter que recebemos o problema e estamos trabalhando em uma correção. Pedimos que o repórter mantenha o problema confidencial até que o anunciemos.
+* Preparar uma correção/patch.
+* Preparar uma publicação descrevendo a vulnerabilidade e as possíveis explorações.
+* Lançar novas versões de todas as versões afetadas.
+* Destacar o problema no anúncio de lançamento.
