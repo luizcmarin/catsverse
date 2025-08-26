@@ -1,3 +1,7 @@
+// =============================================================================
+// Arquivo: catsverse\settings.gradle.kts
+// Descrição: Configuração do Gradle para o projeto catsverse.
+// =============================================================================
 pluginManagement {
     repositories {
         google {
