@@ -17,12 +17,12 @@ fun CatsVerseNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "home",
+        startDestination = AppRoutes.routes[0].route,
         modifier = modifier
     ) {
-        composable("home") { PlaceholderScreen("Início") }
-        composable("finance") { PlaceholderScreen("Financeiro") }
-        composable("tasks") { PlaceholderScreen("Tarefas") }
+        composable(AppRoutes.routes[0].route) { PlaceholderScreen("Início") }
+        composable(AppRoutes.routes[1].route) { PlaceholderScreen("Financeiro") }
+        composable(AppRoutes.routes[2].route) { PlaceholderScreen("Tarefas") }
     }
 }
 

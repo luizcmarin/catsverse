@@ -1,3 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Strings Globais -->
     <string name="app_name">CatsVerse</string>
+    <string name="module_categorias">Categorias</string>
+    <string name="module_forma_pagamento">Formas de Pagamento</string>
+    <string name="module_fluxo_caixa">Fluxo de Caixa</string>
+    <string name="module_notas">Notas</string>
+    <string name="module_tarefas">Tarefas</string>
+    <string name="module_habitos">Hábitos</string>
+    <string name="module_pomodoro">Pomodoro</string>
+    <string name="module_preferencias">Preferências</string>
+    <string name="module_perfil">Perfil</string>
+    <string name="module_sobre">Sobre</string>
+    <string name="module_ajuda">Ajuda</string>
+    <string name="module_inicio">Início</string>
+
+    <!-- Actions -->
+    <string name="action_novo">Novo</string>
+    <string name="action_editar">Editar</string>
+    <string name="action_excluir">Excluir</string>
+    <string name="action_salvar">Salvar</string>
+    <string name="action_cancelar">Cancelar</string>
+    <string name="action_confirmar">Confirmar</string>
+    <string name="action_ok">OK</string>
+    <string name="action_voltar">Voltar</string>
+    <string name="action_fechar">Fechar</string>
+    <string name="action_pesquisar">Pesquisar</string>
+    <string name="action_compartilhar">Compartilhar</string>
+    <string name="action_exportar_pdf">Exportar para PDF</string>
+    <string name="action_exportar_imagem">Exportar como Imagem</string>
+    <string name="action_timer_iniciar">Iniciar</string>
+    <string name="action_timer_pausar">Pausar</string>
+    <string name="action_timer_reiniciar">Reiniciar</string>
+
+    <!-- Rótulos Comuns do Banco de Dados -->
+    <string name="label_nome">Nome</string>
+    <string name="label_descricao">Descrição</string>
+    <string name="label_valor">Valor</string>
+    <string name="label_data">Data</string>
+    <string name="label_icone">Ícone</string>
+    <string name="label_cor">Cor</string>
+    <string name="label_tipo_conta">Tipo de Conta</string>
+    <string name="label_data_vencimento">Data de Vencimento</string>
+    <string name="label_data_vencimento_label">Data de Vencimento: %1$s</string>
+    <string name="label_selecionar_data_vencimento">Selecione a data de vencimento</string>
+    <string name="label_receita">Receita</string>
+    <string name="label_despesa">Despesa</string>
+    <string name="label_categoria">Categoria</string>
+    <string name="label_categoria_label">Categoria: %1$s</string>
+    <string name="label_forma_pagamento">Forma de Pagamento</string>
+    <string name="label_forma_pagamento_label">Forma de Pagamento: %1$s</string>
+    <string name="label_tarefa_titulo">Título</string>
+    <string name="label_tarefa_prioridade">Prioridade</string>
+    <string name="label_tarefa_concluido">Concluído</string>
+
+    <!-- Mensagens de Erro e Sucesso -->
+    <string name="message_loading">Carregando…</string>
+    <string name="message_success">Ação realizada com sucesso.</string>
+    <string name="message_error">Ocorreu um erro. Tente novamente.</string>
+    <string name="message_confirm_delete">Tem certeza de que deseja excluir este item?</string>
+    <string name="message_no_data">Nenhum dado encontrado.</string>
+    <string name="error_nome_vazio">O nome não pode ser vazio.</string>
+    <string name="error_descricao_vazio">A descrição não pode ser vazia.</string>
+    <string name="error_valor_positivo">O valor deve ser maior que zero.</string>
+    <string name="error_carregar_dados">Erro ao carregar os dados. Verifique sua conexão e tente novamente.</string>
+    <string name="error_salvar">Não foi possível salvar o lançamento. Verifique os dados e tente novamente.</string>
+    <string name="error_excluir">Não foi possível excluir o lançamento. Tente novamente mais tarde.</string>
 </resources>
