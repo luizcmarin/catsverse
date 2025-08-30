@@ -1,33 +1,45 @@
 // =============================================================================
 // Arquivo: com.marin.catsverse.dominio.ExcecaoDominioPersonalizada.kt
 // Descrição: Exceção de Domínio Personalizada. Permite fornecer mensagens de erro
-//             mais amigáveis (usando stringResId) e específicas do contexto
-//             do seu aplicativo.
-//   stringResId: Int?: O ID do recurso de string para a mensagem de erro localizável.
-//                      Pode ser nulo se uma mensagem literal for suficiente ou
-//                      se o erro não tiver uma mensagem de UI direta.
-//   mensagemLiteral: String? = null: Uma mensagem de erro literal, útil para logging
-//                                  ou para casos onde um stringResId não é aplicável.
-//   cause: Throwable? = null: Permite que você "envolva" a exceção original.
+//             literais ou baseadas em recursos de string (stringResId),
+//             e também encapsular a exceção original (causa).
+//
+// Construtores:
+// 1. Principal: (stringResId: Int?, mensagemLiteral: String? = null, cause: Throwable? = null)
+//    - Usa stringResId para mensagens localizáveis.
+//    - Usa mensagemLiteral para logs ou mensagens não localizadas.
+//    - A mensagem da Exception base será mensagemLiteral ou a mensagem da causa.
+//
+// 2. Apenas com stringResId: (stringResId: Int, cause: Throwable? = null)
+//    - Conveniência para quando apenas um ID de recurso de string é necessário.
+//
+// 3. Apenas com mensagemLiteral: (mensagemLiteral: String, cause: Throwable? = null)
+//    - Conveniência para quando apenas uma mensagem de erro literal é necessária.
 // =============================================================================
 package com.marin.catsverse.dominio
 
 import androidx.annotation.StringRes
 
+/**
+ * Exceção de Domínio Personalizada.
+ */
 open class ExcecaoDominioPersonalizada(
-    @StringRes open val stringResId: Int?, // Propriedade adicionada
-    val mensagemLiteral: String? = null,    // Para logging ou mensagens não localizadas
-    override val cause: Throwable? = null   // Sobrescrevendo cause de Exception
-) : Exception(mensagemLiteral, cause) {     // Passando mensagemLiteral para o construtor de Exception
+    @StringRes open val stringResId: Int?,
+    val mensagemLiteral: String? = null,
+    cause: Throwable? = null
+) : Exception(mensagemLiteral ?: cause?.message, cause) {
 
-    // Construtor secundário para conveniência, se você às vezes só tem stringResId
+    /**
+     * Construtor secundário para quando apenas um ID de recurso de string é necessário.
+     */
     constructor(
         @StringRes stringResId: Int,
         cause: Throwable? = null
     ) : this(stringResId = stringResId, mensagemLiteral = null, cause = cause)
 
-    // Construtor secundário para manter compatibilidade com o uso anterior (apenas mensagem literal)
-    // Embora o ideal seja migrar para usar stringResId para mensagens de UI.
+    /**
+     * Construtor secundário para quando apenas uma mensagem de erro literal é necessária.
+     */
     constructor(
         mensagemLiteral: String,
         cause: Throwable? = null
