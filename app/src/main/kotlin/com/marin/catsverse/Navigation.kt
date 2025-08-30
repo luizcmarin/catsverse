@@ -1,3 +1,7 @@
+// =============================================================================
+// Arquivo: com.marin.catsverse.Navigation.kt
+// Descrição: Gráfico de navegação que gerencia a transição entre as telas.
+// =============================================================================
 package com.marin.catsverse
 
 import androidx.compose.foundation.layout.Box
@@ -9,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.marin.catsverse.ui.screens.PrivacyPolicyScreen
+import com.marin.catsverse.ui.screens.SobreScreen
 
 @Composable
 fun CatsVerseNavGraph(
@@ -23,6 +29,19 @@ fun CatsVerseNavGraph(
         composable(AppRoutes.routes[0].route) { PlaceholderScreen("Início") }
         composable(AppRoutes.routes[1].route) { PlaceholderScreen("Financeiro") }
         composable(AppRoutes.routes[2].route) { PlaceholderScreen("Tarefas") }
+
+        composable(AppRoutes.routes[3].route) {
+            SobreScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPrivacyPolicy = { navController.navigate(AppRoutes.routes[4].route) }
+            )
+        }
+
+        composable(AppRoutes.routes[4].route) {
+            PrivacyPolicyScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
     }
 }
 

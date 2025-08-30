@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="botao_novo">Novo</string>
+    <string name="botao_editar">Editar</string>
+    <string name="botao_excluir">Excluir</string>
+    <string name="botao_salvar">Salvar</string>
+    <string name="botao_cancelar">Cancelar</string>
+    <string name="botao_confirmar">Confirmar</string>
+    <string name="botao_ok">OK</string>
+    <string name="botao_voltar">Voltar</string>
+    <string name="botao_limpar">Limpar</string>
+    <string name="botao_fechar">Fechar</string>
+    <string name="botao_pesquisar">Pesquisar</string>
+    <string name="botao_compartilhar">Compartilhar</string>
+    <string name="botao_exportar_pdf">Exportar para PDF</string>
+    <string name="botao_exportar_imagem">Exportar como Imagem</string>
+    <string name="botao_timer_iniciar">Iniciar</string>
+    <string name="botao_timer_pausar">Pausar</string>
+    <string name="botao_timer_reiniciar">Reiniciar</string>
+    <string name="botao_atualizar">Atualizar</string>
+</resources>

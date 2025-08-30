@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CatsVerse</string>
+    <string name="app_versao">Versão %s</string>
+    <string name="app_desenvolvido_por">Desenvolvido por Marin</string>
+</resources>

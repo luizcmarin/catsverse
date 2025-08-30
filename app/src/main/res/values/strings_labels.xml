@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="label_nome">Nome</string>
+    <string name="label_descricao">Descrição</string>
+    <string name="label_valor">Valor</string>
+    <string name="label_data">Data</string>
+    <string name="label_categoria">Categoria</string>
+    <string name="label_categoria_label">Categoria: %1$s</string>
+    <string name="label_tipo_conta">Tipo de Conta</string>
+    <string name="label_data_vencimento">Data de Vencimento</string>
+    <string name="label_data_vencimento_label">Data de Vencimento: %1$s</string>
+    <string name="label_selecionar_data_vencimento">Selecione a data de vencimento</string>
+    <string name="label_receita">Receita</string>
+    <string name="label_despesa">Despesa</string>
+    <string name="label_pago">Pago</string>
+    <string name="label_pendente">Pendente</string>
+    <string name="label_icone">Ícone</string>
+    <string name="label_cor">Cor</string>
+    <string name="label_forma_pagamento">Forma de Pagamento</string>
+    <string name="label_forma_pagamento_label">Forma de Pagamento: %1$s</string>
+    <string name="label_forma_pagamento_carteira">Carteira</string>
+    <string name="label_tarefa_titulo">Título</string>
+    <string name="label_tarefa_prioridade">Prioridade</string>
+    <string name="label_tarefa_concluido">Concluído</string>
+    <string name="label_forma_pagamento_dinheiro">Dinheiro</string>
+    <string name="label_forma_pagamento_cartao_credito">Cartão de Crédito</string>
+    <string name="label_forma_pagamento_pix">PIX</string>
+    <string name="label_forma_pagamento_boleto">Boleto</string>
+    <string name="label_forma_pagamento_transferencia">Transferência</string>
+</resources>

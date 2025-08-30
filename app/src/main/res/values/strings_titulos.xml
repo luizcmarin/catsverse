@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="titulo_inicio">Início</string>
+    <string name="titulo_categorias">Categorias</string>
+    <string name="titulo_forma_pagamento">Formas de Pagamento</string>
+    <string name="titulo_fluxo_caixa">Fluxo de Caixa</string>
+    <string name="titulo_tarefas">Tarefas</string>
+    <string name="titulo_preferencias">Preferências</string>
+    <string name="titulo_sobre">Sobre o CatsVerse</string>
+    <string name="titulo_politica_privacidade">Política de Privacidade</string>
+</resources>

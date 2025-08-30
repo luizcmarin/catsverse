@@ -1,4 +1,4 @@
-name: Build
+name: Build Android App
 
 on:
   workflow_dispatch:
@@ -12,14 +12,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test_and_apk:
-    name: "Local tests and APKs"
+  build_and_test:
+    name: "Build, Local Tests, and Checks"
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write
-      pull-requests: write
-      security-events: write
+      contents: write # Para git-auto-commit-action (Dependency Guard, Roborazzi)
+      pull-requests: write # Para o relatório JaCoCo (se você adicionar)
+      security-events: write # Para upload SARIF
 
     timeout-minutes: 60
 
@@ -39,159 +39,126 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+          # cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }} # REMOVIDO PARA SIMPLICIDADE POR ENQUANTO
           build-scan-publish: true
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
 
-      - name: Check build-logic
-        run: ./gradlew :build-logic:convention:check
-
       - name: Check spotless
-        run: ./gradlew spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache
+        run: ./gradlew :app:spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache
 
-      - name: Check Dependency Guard
+      - name: Check Dependency Guard for :app module
         id: dependencyguard_verify
         continue-on-error: true
-        run: ./gradlew dependencyGuard
+        run: ./gradlew :app:dependencyGuard
 
       - name: Prevent updating Dependency Guard baselines if this is a fork
-        id: checkfork_dependencyguard
-        continue-on-error: false
         if: steps.dependencyguard_verify.outcome == 'failure' && github.event.pull_request.head.repo.full_name != github.repository
         run: |
-          echo "::error::Dependency Guard failed, please update baselines with: ./gradlew dependencyGuardBaseline" && exit 1
+          echo "::error::Dependency Guard failed for :app, please update baselines with: ./gradlew :app:dependencyGuardBaseline" && exit 1
 
-        # Runs if previous job failed
       - name: Generate new Dependency Guard baselines if verification failed and it's a PR
         id: dependencyguard_baseline
         if: steps.dependencyguard_verify.outcome == 'failure' && github.event_name == 'pull_request'
         run: |
-          ./gradlew dependencyGuardBaseline
+          ./gradlew :app:dependencyGuardBaseline
 
       - name: Push new Dependency Guard baselines if available
         uses: stefanzweifel/git-auto-commit-action@v5
         if: steps.dependencyguard_baseline.outcome == 'success'
         with:
-          file_pattern: '**/dependencies/*.txt'
+          file_pattern: 'app/dependencies/*.txt'
           disable_globbing: true
-          commit_message: "🤖 Updates baselines for Dependency Guard"
+          commit_message: "🤖 Updates baselines for Dependency Guard (:app)"
 
-      - name: Run all local screenshot tests (Roborazzi)
+      # Se você usa Roborazzi para testes de screenshot no módulo :app
+      - name: Run :app local screenshot tests (Roborazzi)
         id: screenshotsverify
         continue-on-error: true
-        run: ./gradlew verifyRoborazziDemoDebug
+        run: ./gradlew :app:verifyRoborazziDebug # Adapte para seu variant de teste (ex: verifyRoborazziDebug)
 
       - name: Prevent pushing new screenshots if this is a fork
-        id: checkfork_screenshots
-        continue-on-error: false
         if: steps.screenshotsverify.outcome == 'failure' && github.event.pull_request.head.repo.full_name != github.repository
         run: |
-          echo "::error::Screenshot tests failed, please create a PR in your fork first." 
-          echo "Your fork's CI will take screenshots for your fork."
+          echo "::error::Screenshot tests failed for :app, please create a PR in your fork first."
           exit 1
 
-      # Runs if previous job failed
       - name: Generate new screenshots if verification failed and it's a PR
         id: screenshotsrecord
         if: steps.screenshotsverify.outcome == 'failure' && github.event_name == 'pull_request'
         run: |
-          ./gradlew recordRoborazziDemoDebug
+          ./gradlew :app:recordRoborazziDebug # Adapte para seu variant de teste (ex: recordRoborazziDebug)
 
       - name: Push new screenshots if available
         uses: stefanzweifel/git-auto-commit-action@v5
         if: steps.screenshotsrecord.outcome == 'success'
         with:
-          file_pattern: '*/*.png'
-          disable_globbing: true
-          commit_message: "🤖 Updates screenshots"
+          file_pattern: 'app/src/**/roborazzi/**/*.png' # Ajuste para o local dos seus screenshots de referência
+          commit_message: "🤖 Updates screenshots for :app"
 
-      # Run local tests after screenshot tests to avoid wrong UP-TO-DATE. TODO: Ignore screenshots.
-      - name: Run local tests
-        run: ./gradlew testDemoDebug :lint:test
+      - name: Run :app local unit tests
+        run: ./gradlew :app:testDebugUnitTest
 
-      - name: Build all build type and flavor permutations
-        run: ./gradlew :app:assemble
+      - name: Build :app APKs (debug and release)
+        run: ./gradlew :app:assembleDebug :app:assembleRelease
 
-      - name: Upload build outputs (APKs)
+      - name: Upload :app build outputs (APKs)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: APKs
-          path: '**/build/outputs/apk/**/*.apk'
+          name: app-apks
+          path: 'app/build/outputs/apk/**/*.apk'
 
-      - name: Upload JVM local results (XML)
-        if: ${{ !cancelled() }}
+      - name: Upload :app JVM local test results (XML)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: local-test-results
-          path: '**/build/test-results/test*UnitTest/**.xml'
+          name: app-local-test-results
+          path: 'app/build/test-results/test*UnitTest/**/*.xml'
 
-      - name: Upload screenshot results (PNG)
-        if: ${{ !cancelled() }}
+      - name: Upload :app screenshot test results (PNG)
+        if: always() && steps.screenshotsverify.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
-          name: screenshot-test-results
-          path: '**/build/outputs/roborazzi/*_compare.png'
+          name: app-screenshot-test-results
+          path: 'app/build/outputs/roborazzi/*_compare.png' # Ajuste para o local dos seus resultados de comparação
 
-      - name: Check lint
-        run: ./gradlew :app:lintProdRelease :app-nia-catalog:lintRelease :lint:lint
+      - name: Check :app lint
+        run: ./gradlew :app:lintRelease
 
-      - name: Upload lint reports (HTML)
-        if: ${{ !cancelled() }}
+      - name: Upload :app lint reports (HTML)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lint-reports
-          path: '**/build/reports/lint-results-*.html'
+          name: app-lint-reports-html
+          path: 'app/build/reports/lint-results-*.html'
 
-      - name: Upload lint reports (SARIF) for app module
-        if: ${{ !cancelled() && hashFiles('app/**/*.sarif') != '' }}
+      - name: Upload :app lint reports (SARIF)
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: './app/'
-          category: app
+          sarif_file: app/build/reports/lint-results-release.sarif # Verifique o nome exato do arquivo
+          category: app-lint
+          checkout_path: ${{ github.workspace }}
 
-      - name: Upload lint reports (SARIF) for app-nia-catalog module
-        if: ${{ !cancelled() && hashFiles('app-nia-catalog/**/*.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: './app-nia-catalog/'
-          category: app-nia-catalog
-
-      - name: Upload lint reports (SARIF) for lint module
-        if: ${{ !cancelled() && hashFiles('lint/**/*.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: './lint/'
-          category: lint
-
-      - name: Check badging
-        run: ./gradlew :app:checkProdReleaseBadging
-
-  androidTest:
+  android_instrumentation_tests:
+    name: "Android Instrumentation Tests for :app"
     runs-on: ubuntu-latest
     timeout-minutes: 55
     strategy:
       matrix:
-        api-level: [26, 34]
+        api-level: [29, 34] # MinSDK e um mais recente, ajuste conforme necessário
 
     steps:
-      - name: Delete unnecessary tools 🔧
+      - name: Delete unnecessary tools
         uses: jlumbroso/free-disk-space@v1.3.1
-        with:
-          android: false # Don't remove Android tools
-          tool-cache: true # Remove image tool cache - rm -rf "$AGENT_TOOLSDIRECTORY"
-          dotnet: true # rm -rf /usr/share/dotnet
-          haskell: true # rm -rf /opt/ghc...
-          swap-storage: true # rm -f /mnt/swapfile (4GiB)
-          docker-images: false # Takes 16s, enable if needed in the future
-          large-packages: false # includes google-cloud-sdk and it's slow
+        with: { android: false, tool-cache: true, dotnet: true, haskell: true, swap-storage: true }
 
       - name: Enable KVM group perms
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-          ls /dev/kvm
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -201,19 +168,17 @@ jobs:
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: 21
+        with: { distribution: 'zulu', java-version: 21 }
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+          # cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }} # REMOVIDO PARA SIMPLICIDADE POR ENQUANTO
           build-scan-publish: true
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
 
-      - name: Build projects and run instrumentation tests
+      - name: Run :app instrumentation tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
@@ -221,43 +186,13 @@ jobs:
           disable-animations: true
           disk-size: 6000M
           heap-size: 600M
-          script: ./gradlew connectedDemoDebugAndroidTest --daemon
+          script: ./gradlew :app:connectedDebugAndroidTest --daemon
 
-      - name: Run local tests (including Roborazzi) for the combined coverage report (only API 30)
-        if: matrix.api-level == 30
-        # There is no need to verify Roborazzi tests to generate coverage.
-        run: ./gradlew testDemoDebugUnitTest -Proborazzi.test.verify=false # Add Prod if we ever add JVM tests for prod
-
-      # Add `createProdDebugUnitTestCoverageReport` if we ever add JVM tests for prod
-      - name: Generate coverage reports for Debug variants (only API 30)
-        if: matrix.api-level == 30
-        run: ./gradlew createDemoDebugCombinedCoverageReport
-        
-      - name: Upload test reports
-        if: ${{ !cancelled() }}
+      - name: Upload :app instrumentation test reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports-${{ matrix.api-level }}
-          path: '**/build/reports/androidTests'
+          name: app-instrumentation-test-reports-${{ matrix.api-level }}
+          path: 'app/build/reports/androidTests/connected'
 
-      - name: Display local test coverage (only API 30)
-        if: matrix.api-level == 30
-        id: jacoco
-        uses: madrapps/jacoco-report@v1.7.1
-        with:
-          title: Combined test coverage report
-          min-coverage-overall: 40
-          min-coverage-changed-files: 60
-          paths: |
-            ${{ github.workspace }}/**/build/reports/jacoco/**/*Report.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-        
-      - name: Upload local coverage reports (XML + HTML) (only API 30)
-        if: matrix.api-level == 30
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-reports
-          if-no-files-found: error
-          compression-level: 1
-          overwrite: false
-          path: '**/build/reports/jacoco/'
+

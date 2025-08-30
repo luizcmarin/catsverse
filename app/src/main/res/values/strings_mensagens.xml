@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mensagem_carregando">Carregando…</string>
+    <string name="mensagem_sucesso">Ação realizada com sucesso.</string>
+    <string name="mensagem_confirma_exclusao">Tem certeza de que deseja excluir este item?</string>
+    <string name="mensagem_excluido_com_sucesso">Excluído com sucesso</string>
+</resources>

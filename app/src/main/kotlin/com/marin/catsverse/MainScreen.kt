@@ -1,3 +1,8 @@
+// =============================================================================
+// Arquivo: com.marin.catsverse.MainScreen.kt
+// Descrição: Tela principal que gerencia o layout da interface,
+//            incluindo o drawer de navegação e a TopAppBar.
+// =============================================================================
 package com.marin.catsverse
 
 import androidx.compose.foundation.layout.padding
@@ -18,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
-import com.marin.catsverse.utils.Icones
+import com.marin.catsverse.ui.Icones
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)

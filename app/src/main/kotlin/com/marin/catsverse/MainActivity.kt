@@ -1,3 +1,7 @@
+// =============================================================================
+// Arquivo: com.marin.catsverse.MainActivity.kt
+// Descrição: Atividade principal que inicializa o aplicativo.
+// =============================================================================
 package com.marin.catsverse
 
 import android.os.Bundle
