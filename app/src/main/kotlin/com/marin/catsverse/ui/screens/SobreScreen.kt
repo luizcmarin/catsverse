@@ -26,7 +26,7 @@ import com.marin.catsverse.ui.Icones
 import com.marin.catsverse.ui.theme.CatsVerseTheme
 import com.airbnb.lottie.compose.*
 import com.marin.catsverse.AppInfo
-import com.marin.catsverse.app.R
+import com.marin.catsverse.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

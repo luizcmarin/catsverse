@@ -1,3 +1,11 @@
+// =============================================================================
+// Arquivo: com.marin.catsverse.ui.formasPagamento.FormaPagamentoScreen.kt
+// Descrição: Define a tela de UI para o gerenciamento de Formas de Pagamento.
+//            Inclui o Composable principal da tela, o layout do conteúdo,
+//            o formulário de entrada e os itens da lista de formas de pagamento.
+//            Esta tela interage com [FormaPagamentoViewModel] para obter dados
+//            e executar ações.
+// =============================================================================
 package com.marin.catsverse.ui.formasPagamento
 
 import android.widget.Toast
@@ -11,11 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import com.marin.catsverse.app.R
+import com.marin.catsverse.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.marin.catsverse.data.entity.FormaPagamento
 import com.marin.catsverse.ui.Icones
 import com.marin.catsverse.ui.common.UiEvent
@@ -24,15 +32,52 @@ import com.marin.catsverse.ui.common.AppOutlinedTextField
 import com.marin.catsverse.dominio.IconeFormaPagamento
 import kotlinx.coroutines.flow.collectLatest
 
+/**
+ * Tela principal para gerenciar Formas de Pagamento.
+ *
+ * Exibe um formulário para adicionar/editar formas de pagamento e uma lista das formas existentes.
+ * Lida com a apresentação de diálogos de confirmação, snackbars/toasts para feedback ao usuário
+ * e navegação.
+ *
+ * @param viewModel O [FormaPagamentoViewModel] que fornece o estado e lida com a lógica de negócios.
+ *                  Injetado automaticamente pelo Hilt.
+ * @param onNavigateBack Callback para ser invocado quando a navegação para a tela anterior é solicitada.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormaPagamentoScreen(
-    viewModel: FormaPagamentoViewModel = viewModel(),
-    onNavigateUp: () -> Unit // Para navegação "voltar"
+    viewModel: FormaPagamentoViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit // Para navegação "voltar"
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+
+    // Diálogo de confirmação de exclusão
+    if (uiState.mostrarDialogoExclusao && uiState.itemParaExcluir != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelarExclusao() },
+            title = { Text(text = stringResource(R.string.dialogo_confirmar_exclusao_titulo)) },
+            text = {
+                Text(
+                    text = stringResource(
+                        R.string.dialogo_confirmar_exclusao_mensagem,
+                        uiState.itemParaExcluir!!.nome
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.confirmarExclusao() }) {
+                    Text(stringResource(R.string.botao_excluir))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.cancelarExclusao() }) {
+                    Text(stringResource(R.string.botao_cancelar))
+                }
+            }
+        )
+    }
 
     LaunchedEffect(key1 = Unit) {
         viewModel.eventFlow.collectLatest { event ->
@@ -45,7 +90,7 @@ fun FormaPagamentoScreen(
                     val message = context.getString(event.messageResId, *event.args.toTypedArray())
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 }
-                UiEvent.NavigateUp -> onNavigateUp()
+                UiEvent.NavigateUp -> onNavigateBack()
             }
         }
     }
@@ -56,7 +101,7 @@ fun FormaPagamentoScreen(
             TopAppBar(
                 title = { Text(text = stringResource(R.string.titulo_forma_pagamento)) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(imageVector = Icones.Voltar, contentDescription = stringResource(R.string.botao_voltar))
                     }
                 },
@@ -77,12 +122,24 @@ fun FormaPagamentoScreen(
             onNomeChange = viewModel::onNomeChange,
             onIconeChange = viewModel::onIconeChange,
             onSalvarClick = viewModel::salvarFormaPagamento,
-            onExcluirClick = viewModel::excluirFormaPagamento,
+            onExcluirClick = viewModel::prepararParaExcluir,
             onEditarClick = viewModel::prepararParaEditar
         )
     }
 }
 
+/**
+ * Composable privado que define o layout do conteúdo principal da tela de Formas de Pagamento.
+ * Inclui o formulário de entrada e a lista de formas de pagamento.
+ *
+ * @param modifier O [Modifier] a ser aplicado ao layout do conteúdo.
+ * @param uiState O estado atual da UI ([FormaPagamentoScreenUiState]) a ser exibido.
+ * @param onNomeChange Callback invocado quando o valor do campo nome é alterado.
+ * @param onIconeChange Callback invocado quando o ícone selecionado é alterado.
+ * @param onSalvarClick Callback invocado quando o botão de salvar/atualizar é clicado.
+ * @param onExcluirClick Callback invocado quando o botão de excluir de um item da lista é clicado.
+ * @param onEditarClick Callback invocado quando um item da lista é clicado para edição.
+ */
 @Composable
 private fun FormaPagamentoContent(
     modifier: Modifier = Modifier,
@@ -131,7 +188,9 @@ private fun FormaPagamentoContent(
             Text(
                 text = stringResource(R.string.label_forma_pagamento),
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
             )
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(
@@ -150,6 +209,14 @@ private fun FormaPagamentoContent(
     }
 }
 
+/**
+ * Composable privado que renderiza o formulário de entrada para criar ou editar uma Forma de Pagamento.
+ *
+ * @param formState O estado atual do formulário ([FormaPagamentoFormState]) a ser exibido.
+ * @param onNomeChange Callback invocado quando o valor do campo nome é alterado.
+ * @param onIconeChange Callback invocado quando o ícone selecionado é alterado.
+ * @param onSalvarClick Callback invocado quando o botão de salvar/atualizar é clicado.
+ */
 @Composable
 private fun FormaPagamentoInputForm(
     formState: FormaPagamentoFormState,
@@ -216,6 +283,15 @@ private fun FormaPagamentoInputForm(
     }
 }
 
+/**
+ * Composable privado que renderiza um item individual na lista de Formas de Pagamento.
+ * Exibe o nome e o ícone da forma de pagamento, além de um botão para exclusão.
+ * Permite que o item seja clicável para edição.
+ *
+ * @param formaPagamento O objeto [FormaPagamento] a ser exibido.
+ * @param onExcluirClick Callback invocado quando o botão de excluir do item é clicado.
+ * @param onEditarClick Callback invocado quando o item é clicado.
+ */
 @Composable
 private fun FormaPagamentoListItem(
     formaPagamento: FormaPagamento,
@@ -223,7 +299,7 @@ private fun FormaPagamentoListItem(
     onEditarClick: () -> Unit
 ) {
     val itemIcon = formaPagamento.icone?.let { nomeIcone ->
-        IconeFormaPagamento.fromName(nomeIcone)?.icon
+        IconeFormaPagamento.fromName(nomeIcone).icon
     } ?: Icones.FormaPagamento // Fallback
 
     Row(
@@ -256,13 +332,16 @@ private fun FormaPagamentoListItem(
     }
 }
 
+// =============================================================================
+// Previews para desenvolvimento e visualização no Android Studio
+// =============================================================================
 
 @Preview(showBackground = true)
 @Composable
 fun FormaPagamentoScreenPreview() {
     MaterialTheme {
         // Para um preview funcional, você precisaria mockar o ViewModel ou passar um estado fixo.
-        // FormaPagamentoScreen(onNavigateUp = {}) // Este vai usar o ViewModel real
+        // FormaPagamentoScreen(onNavigateBack = {}) // Este vai usar o ViewModel real
     }
 }
 
@@ -281,8 +360,9 @@ fun FormaPagamentoContentPreview_Empty() {
 @Composable
 fun FormaPagamentoContentPreview_WithData() {
     val sampleData = listOf(
-        FormaPagamento(1, "Dinheiro", IconeFormaPagamento.CARTEIRA.name),
-        FormaPagamento(2, "Cartão de Crédito", IconeFormaPagamento.CARTAO_CREDITO.name)
+        FormaPagamento(1, stringResource(R.string.dinheiro), IconeFormaPagamento.CARTEIRA.name),
+        FormaPagamento(2,
+            stringResource(R.string.cartao_de_credito), IconeFormaPagamento.CARTAO_CREDITO.name)
     )
     MaterialTheme {
         FormaPagamentoContent(
@@ -308,7 +388,7 @@ fun FormaPagamentoInputFormPreview_New() {
 fun FormaPagamentoInputFormPreview_Editing() {
     MaterialTheme {
         FormaPagamentoInputForm(
-            formState = FormaPagamentoFormState(id = 1L, nome = "Dinheiro Antigo", iconeNome = IconeFormaPagamento.DINHEIRO.name),
+            formState = FormaPagamentoFormState(id = 1L, nome = stringResource(R.string.dinheiro_antigo), iconeNome = IconeFormaPagamento.DINHEIRO.name),
             onNomeChange = {}, onIconeChange = {}, onSalvarClick = {}
         )
     }

@@ -13,7 +13,7 @@ plugins {
 }
 
 android {
-    namespace = "com.marin.catsverse.app"
+    namespace = "com.marin.catsverse"
     compileSdk = libs.versions.compileSdk.get().toInt()
     flavorDimensions += listOf("app")
 
@@ -24,6 +24,7 @@ android {
         versionCode = libs.versions.versionCode.get().toInt()
         versionName = libs.versions.versionName.get()
 
+        buildConfigField("boolean", "ROOM_EXPORT_SCHEMA", "true")
         buildConfigField("int", "VERSION_CODE", libs.versions.versionCode.get())
         buildConfigField("String", "VERSION_NAME", "\"${libs.versions.versionName.get()}\"")
 
@@ -38,6 +39,8 @@ android {
         }
         release {
             isMinifyEnabled = true
+            buildConfigField( "boolean", "ROOM_EXPORT_SCHEMA", "false")
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -77,6 +80,14 @@ android {
         }
     }
 
+    lint {
+        // Gera o relatório em formato SARIF
+        sarifReport = true
+        abortOnError = false
+        checkReleaseBuilds = true
+        warningsAsErrors = false
+    }
+
     sourceSets["main"].java.srcDirs("src/main/java", "src/main/kotlin")
 }
 
@@ -87,6 +98,8 @@ dependencies {
     implementation(libs.bundles.compose.ui)
     implementation(libs.bundles.hilt)
     implementation(libs.bundles.room)
+    implementation(libs.androidx.animation.graphics)
+    implementation(libs.androidx.core.animation)
 
     ksp(libs.hilt.compiler)
     ksp(libs.androidx.room.compiler)

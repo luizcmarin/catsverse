@@ -1,12 +1,13 @@
 // =============================================================================
 // Arquivo: com.marin.catsverse.dominio.Enums.kt
-// Descrição: Coleção de enums utilitárias para a lógica de negócios e tipagem de dados da aplicação.
+// Descrição: Coleção de enums utilitárias para a lógica de negócios e tipagem
+//            de dados da aplicação.
 // =============================================================================
 package com.marin.catsverse.dominio
 
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.marin.catsverse.app.R
+import com.marin.catsverse.R
 import com.marin.catsverse.ui.Icones
 
 /**
@@ -27,6 +28,11 @@ enum class StatusTransacao(@StringRes val displayNameResId: Int) {
     PENDENTE(R.string.label_pendente)
 }
 
+// Enum para representar a escolha do usuário
+enum class ThemePreference {
+    SYSTEM, LIGHT, DARK
+}
+
 /**
  * Enumeração que representa os ícones disponíveis para uma forma de pagamento.
  *
@@ -40,8 +46,8 @@ enum class IconeFormaPagamento(
     CARTEIRA(R.string.label_forma_pagamento_carteira, Icones.FormaPagamento),
     DINHEIRO(R.string.label_forma_pagamento_dinheiro, Icones.Dinheiro),
     CARTAO_CREDITO(R.string.label_forma_pagamento_cartao_credito, Icones.CartaoCredito),
-    PIX(R.string.label_forma_pagamento_pix, Icones.Financeiro),
-    BOLETO(R.string.label_forma_pagamento_boleto, Icones.QrCode),
+    PIX(R.string.label_forma_pagamento_pix, Icones.QrCode),
+    BOLETO(R.string.label_forma_pagamento_boleto, Icones.Boleto),
     DEPOSITO(R.string.label_forma_pagamento_transferencia, Icones.Transferencia);
 
     companion object {

@@ -18,8 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 
-// --- Componentes Genéricos ---
-
 @Composable
 fun AppOutlinedTextField(
     value: String,

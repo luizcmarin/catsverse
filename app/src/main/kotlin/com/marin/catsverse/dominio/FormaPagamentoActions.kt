@@ -4,10 +4,9 @@
 // =============================================================================
 package com.marin.catsverse.dominio
 
-import com.marin.catsverse.app.R
+import com.marin.catsverse.R
 import com.marin.catsverse.data.entity.FormaPagamento
 import com.marin.catsverse.data.repository.FormaPagamentoRepository
-import com.marin.catsverse.dominio.ExcecaoValidacao
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -25,14 +24,14 @@ class ObterTodasFormasPagamentoAction @Inject constructor(
 /**
  * Ação para salvar uma nova forma de pagamento no banco de dados.
  *
- * @throws ExcecaoValidacao se o nome da forma de pagamento for inválido.
+ * @throws ExcecaoApp se o nome da forma de pagamento for inválido.
  */
 class SalvarFormaPagamentoAction @Inject constructor(
     private val repository: FormaPagamentoRepository
 ) {
     suspend operator fun invoke(formaPagamento: FormaPagamento) {
         if (formaPagamento.nome.isBlank()) {
-            throw ExcecaoValidacao(R.string.erro_nome_vazio)
+            throw ExcecaoApp(R.string.erro_nome_vazio)
         }
         repository.salvarFormaPagamento(formaPagamento)
     }

@@ -18,4 +18,5 @@
     <string name="botao_timer_pausar">Pausar</string>
     <string name="botao_timer_reiniciar">Reiniciar</string>
     <string name="botao_atualizar">Atualizar</string>
+    <string name="mais_opcoes">Mais opções</string>
 </resources>

@@ -27,4 +27,7 @@
     <string name="label_forma_pagamento_pix">PIX</string>
     <string name="label_forma_pagamento_boleto">Boleto</string>
     <string name="label_forma_pagamento_transferencia">Transferência</string>
+    <string name="dinheiro_antigo">Dinheiro Antigo</string>
+    <string name="dinheiro">Dinheiro</string>
+    <string name="cartao_de_credito">Cartão de Crédito</string>
 </resources>

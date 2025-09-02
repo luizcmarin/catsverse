@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="erro_erro">Ocorreu um erro. Tente novamente.</string>
+    <string name="erro_generico">Ocorreu um erro. Tente novamente.</string>
     <string name="erro_nada_encontrado">Nenhum dado encontrado.</string>
     <string name="erro_nome_vazio">O nome não pode ser vazio.</string>
     <string name="erro_descricao_vazio">A descrição não pode ser vazia.</string>
     <string name="erro_valor_positivo">O valor deve ser maior que zero.</string>
-    <string name="erro_carregar_dados">Erro ao carregar os dados. Verifique sua conexão e tente novamente.</string>
-    <string name="erro_salvar">Não foi possível salvar o lançamento. Verifique os dados e tente novamente.</string>
-    <string name="erro_excluir">Não foi possível excluir o lançamento. Tente novamente mais tarde.</string>
+    <string name="erro_carregar_registro">Erro ao carregar o registro.</string>
+    <string name="erro_salvar">Não foi possível salvar o registro. Verifique os dados e tente novamente.</string>
+    <string name="erro_excluir">Não foi possível excluir o registro. Tente novamente mais tarde.</string>
     <string name="erro_operacao_falhou">Erro na operação</string>
-    <string name="erro_excluir_falhou">Exclusão falhou</string>
 </resources>

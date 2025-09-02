@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.marin.catsverse.ui.formasPagamento.FormaPagamentoScreen
 import com.marin.catsverse.ui.screens.PrivacyPolicyScreen
 import com.marin.catsverse.ui.screens.SobreScreen
 
@@ -27,7 +28,13 @@ fun CatsVerseNavGraph(
         modifier = modifier
     ) {
         composable(AppRoutes.routes[0].route) { PlaceholderScreen("Início") }
-        composable(AppRoutes.routes[1].route) { PlaceholderScreen("Financeiro") }
+
+        composable(AppRoutes.routes[1].route) {
+            FormaPagamentoScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
         composable(AppRoutes.routes[2].route) { PlaceholderScreen("Tarefas") }
 
         composable(AppRoutes.routes[3].route) {

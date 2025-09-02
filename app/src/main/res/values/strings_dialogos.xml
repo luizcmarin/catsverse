@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dialogo_confirmar_exclusao_titulo">Confirmar Exclusão</string>
+    <string name="dialogo_confirmar_exclusao_mensagem">Tem certeza de que deseja excluir o registro \"%1$s\"?</string>
+</resources>

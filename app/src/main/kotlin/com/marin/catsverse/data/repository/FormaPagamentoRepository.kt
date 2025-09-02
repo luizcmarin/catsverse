@@ -5,12 +5,12 @@
 package com.marin.catsverse.data.repository
 
 import android.database.sqlite.SQLiteConstraintException
-import android.util.Log
+import com.marin.catsverse.R
 import com.marin.catsverse.data.dao.FormaPagamentoDao
 import com.marin.catsverse.data.entity.FormaPagamento
 import com.marin.catsverse.data.entity.toDomain
 import com.marin.catsverse.data.entity.toEntity
-import com.marin.catsverse.dominio.ExcecaoDominioPersonalizada
+import com.marin.catsverse.dominio.ExcecaoApp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -36,15 +36,9 @@ class FormaPagamentoRepositoryImpl @Inject constructor(
         try {
             dao.inserir(formaPagamento.toEntity())
         } catch (e: SQLiteConstraintException) {
-            Log.e(
-                "FormaPagamentoRepo",
-                "Erro ao salvar forma de pagamento: ${formaPagamento.nome}",
-                e
-            )
-            // Usando o construtor com 'mensagemLiteral'
-            throw ExcecaoDominioPersonalizada(
-                mensagemLiteral = "Não foi possível salvar a forma de pagamento '${formaPagamento.nome}' devido a uma restrição de dados (ex: nome duplicado).",
-                cause = e
+            throw ExcecaoApp(
+                stringResId = R.string.erro_salvar,
+                causaDoErro = e
             )
         }
     }
