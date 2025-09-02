@@ -1,5 +1,11 @@
 name: Build Android App
 
+# Permissões necessárias para as ações de segurança e análise
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
 on:
   workflow_dispatch:
   push:
@@ -27,134 +33,147 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Copy CI gradle.properties
+      # Sugestão de melhoria: Limpar espaço em disco no início do job
+      - name: Limpar ferramentas desnecessárias
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          dotnet: true
+          android: true # Deixe essa opção se você também faz build/teste de instrumentação aqui
+          haskell: true
+          swap-storage: true
+
+      - name: Copiar CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
 
-      - name: Set up JDK 21
+      - name: Configurar JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 21
 
-      - name: Setup Gradle
+      - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          # cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }} # REMOVIDO PARA SIMPLICIDADE POR ENQUANTO
           build-scan-publish: true
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
 
-      - name: Check spotless
+      - name: Dar permissão de execução ao gradlew
+        run: chmod +x ./gradlew
+
+      - name: Executar spotlessCheck
         run: ./gradlew :app:spotlessCheck --init-script gradle/init.gradle.kts --no-configuration-cache
 
-      - name: Check Dependency Guard for :app module
+      - name: Verificar Dependency Guard para o módulo :app
         id: dependencyguard_verify
         continue-on-error: true
         run: ./gradlew :app:dependencyGuard
 
-      - name: Prevent updating Dependency Guard baselines if this is a fork
+      - name: Prevenir a atualização de baselines se for um fork
         if: steps.dependencyguard_verify.outcome == 'failure' && github.event.pull_request.head.repo.full_name != github.repository
         run: |
-          echo "::error::Dependency Guard failed for :app, please update baselines with: ./gradlew :app:dependencyGuardBaseline" && exit 1
+          echo "::error::Dependency Guard falhou para :app, por favor, atualize os baselines no seu fork primeiro: ./gradlew :app:dependencyGuardBaseline" && exit 1
 
-      - name: Generate new Dependency Guard baselines if verification failed and it's a PR
+      - name: Gerar novos baselines se a verificação falhou e é um PR
         id: dependencyguard_baseline
         if: steps.dependencyguard_verify.outcome == 'failure' && github.event_name == 'pull_request'
         run: |
           ./gradlew :app:dependencyGuardBaseline
 
-      - name: Push new Dependency Guard baselines if available
+      - name: Enviar novos baselines se disponíveis
         uses: stefanzweifel/git-auto-commit-action@v5
         if: steps.dependencyguard_baseline.outcome == 'success'
         with:
           file_pattern: 'app/dependencies/*.txt'
           disable_globbing: true
-          commit_message: "🤖 Updates baselines for Dependency Guard (:app)"
+          commit_message: "🤖 Atualiza baselines para Dependency Guard (:app)"
 
-      # Se você usa Roborazzi para testes de screenshot no módulo :app
-      - name: Run :app local screenshot tests (Roborazzi)
+      - name: Executar testes de screenshot (Roborazzi) do :app
         id: screenshotsverify
         continue-on-error: true
-        run: ./gradlew :app:verifyRoborazziDebug # Adapte para seu variant de teste (ex: verifyRoborazziDebug)
+        run: ./gradlew :app:verifyRoborazziDebug
 
-      - name: Prevent pushing new screenshots if this is a fork
+      - name: Prevenir o envio de novos screenshots se for um fork
         if: steps.screenshotsverify.outcome == 'failure' && github.event.pull_request.head.repo.full_name != github.repository
         run: |
-          echo "::error::Screenshot tests failed for :app, please create a PR in your fork first."
+          echo "::error::Os testes de screenshot falharam para :app, por favor, crie um PR no seu fork primeiro."
           exit 1
 
-      - name: Generate new screenshots if verification failed and it's a PR
+      - name: Gerar novos screenshots se a verificação falhou e é um PR
         id: screenshotsrecord
         if: steps.screenshotsverify.outcome == 'failure' && github.event_name == 'pull_request'
         run: |
-          ./gradlew :app:recordRoborazziDebug # Adapte para seu variant de teste (ex: recordRoborazziDebug)
+          ./gradlew :app:recordRoborazziDebug
 
-      - name: Push new screenshots if available
+      - name: Enviar novos screenshots se disponíveis
         uses: stefanzweifel/git-auto-commit-action@v5
         if: steps.screenshotsrecord.outcome == 'success'
         with:
-          file_pattern: 'app/src/**/roborazzi/**/*.png' # Ajuste para o local dos seus screenshots de referência
-          commit_message: "🤖 Updates screenshots for :app"
+          file_pattern: 'app/src/**/roborazzi/**/*.png'
+          commit_message: "🤖 Atualiza screenshots para :app"
 
-      - name: Run :app local unit tests
+      - name: Executar testes unitários locais do :app
         run: ./gradlew :app:testDebugUnitTest
 
-      - name: Build :app APKs (debug and release)
+      - name: Gerar APKs do :app (debug e release)
         run: ./gradlew :app:assembleDebug :app:assembleRelease
 
-      - name: Upload :app build outputs (APKs)
+      - name: Fazer o upload dos APKs do :app
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: app-apks
           path: 'app/build/outputs/apk/**/*.apk'
 
-      - name: Upload :app JVM local test results (XML)
+      - name: Fazer o upload dos resultados dos testes JVM do :app (XML)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: app-local-test-results
           path: 'app/build/test-results/test*UnitTest/**/*.xml'
 
-      - name: Upload :app screenshot test results (PNG)
+      - name: Fazer o upload dos resultados dos testes de screenshot do :app (PNG)
         if: always() && steps.screenshotsverify.outcome != 'skipped'
         uses: actions/upload-artifact@v4
         with:
           name: app-screenshot-test-results
-          path: 'app/build/outputs/roborazzi/*_compare.png' # Ajuste para o local dos seus resultados de comparação
+          path: 'app/build/outputs/roborazzi/*_compare.png'
 
-      - name: Check :app lint
+      - name: Executar o Lint para gerar o relatório SARIF
         run: ./gradlew :app:lintRelease
 
-      - name: Upload :app lint reports (HTML)
+      - name: Enviar os resultados do Lint para o Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: app/build/reports/lint-results-release.sarif
+
+      - name: Fazer o upload dos relatórios do Lint (HTML)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: app-lint-reports-html
           path: 'app/build/reports/lint-results-*.html'
 
-      - name: Upload :app lint reports (SARIF)
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: app/build/reports/lint-results-release.sarif # Verifique o nome exato do arquivo
-          category: app-lint
-          checkout_path: ${{ github.workspace }}
-
   android_instrumentation_tests:
-    name: "Android Instrumentation Tests for :app"
+    name: "Testes de Instrumentação Android para :app"
     runs-on: ubuntu-latest
     timeout-minutes: 55
     strategy:
       matrix:
-        api-level: [29, 34] # MinSDK e um mais recente, ajuste conforme necessário
+        api-level: [29, 34]
 
     steps:
-      - name: Delete unnecessary tools
+      # Sugestão de melhoria: Limpar espaço em disco no início do job
+      - name: Limpar ferramentas desnecessárias
         uses: jlumbroso/free-disk-space@v1.3.1
-        with: { android: false, tool-cache: true, dotnet: true, haskell: true, swap-storage: true }
+        with:
+          android: false
+          tool-cache: true
+          dotnet: true
+          haskell: true
+          swap-storage: true
 
-      - name: Enable KVM group perms
+      - name: Habilitar permissões do grupo KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
@@ -163,22 +182,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Copy CI gradle.properties
+      - name: Copiar CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
 
-      - name: Set up JDK 21
+      - name: Configurar JDK 21
         uses: actions/setup-java@v4
-        with: { distribution: 'zulu', java-version: 21 }
+        with:
+          distribution: 'zulu'
+          java-version: 21
 
-      - name: Setup Gradle
+      - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          # cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }} # REMOVIDO PARA SIMPLICIDADE POR ENQUANTO
           build-scan-publish: true
           build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
           build-scan-terms-of-use-agree: "yes"
 
-      - name: Run :app instrumentation tests
+      - name: Rodar testes de instrumentação do :app
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
@@ -188,11 +208,9 @@ jobs:
           heap-size: 600M
           script: ./gradlew :app:connectedDebugAndroidTest --daemon
 
-      - name: Upload :app instrumentation test reports
+      - name: Fazer o upload dos relatórios de teste de instrumentação do :app
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: app-instrumentation-test-reports-${{ matrix.api-level }}
           path: 'app/build/reports/androidTests/connected'
-
-
