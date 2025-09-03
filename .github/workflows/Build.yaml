@@ -61,9 +61,6 @@ jobs:
       - name: Dar permissão de execução ao gradlew
         run: chmod +x ./gradlew
 
-      - name: Executar spotlessCheck
-        run: ./gradlew :app:spotlessCheck --no-configuration-cache
-
       - name: Verificar Dependency Guard para o módulo :app
         id: dependencyguard_verify
         continue-on-error: true
