@@ -29,12 +29,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Verificar espaço em disco antes da limpeza de disco
+        run: df -h
+
       - name: Limpar espaço em disco
         uses: jlumbroso/free-disk-space@v1.3.1
         with:
           android: false # Confia nas actions de setup para gerenciar o SDK
           tool-cache: true # Limpa caches de ferramentas baixadas
           swap-storage: true # Limpa o swap
+
+      - name: Verificar espaço em disco depois da limpeza de disco
+        run: df -h
 
       - name: Configurar JDK 21
         uses: actions/setup-java@v4
@@ -57,6 +63,9 @@ jobs:
 
       - name: Dar permissão de execução ao gradlew
         run: chmod +x ./gradlew
+
+      - name: Verificar espaço em disco antes de configurar o Android SDK
+        run: df -h
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v2
@@ -97,6 +106,10 @@ jobs:
         with:
           name: app-lint-reports-html
           path: 'app/build/reports/lint-results-*.html'
+
+      - name: Verificar espaço em disco (Final do Job)
+        if: always() # Garante que rode mesmo se etapas anteriores falharem
+        run: df -h
 
   android_instrumentation_tests:
     name: "Testes de Instrumentação Android para :app"
