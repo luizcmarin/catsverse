@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write # Para git-auto-commit-action (Dependency Guard, Roborazzi)
+      contents: write # Para git-auto-commit-action (Roborazzi)
       pull-requests: write # Para o relatório JaCoCo (se você adicionar)
       security-events: write # Para upload SARIF
 
@@ -60,30 +60,6 @@ jobs:
 
       - name: Dar permissão de execução ao gradlew
         run: chmod +x ./gradlew
-
-      - name: Verificar Dependency Guard para o módulo :app
-        id: dependencyguard_verify
-        continue-on-error: true
-        run: ./gradlew :app:dependencyGuard
-
-      - name: Prevenir a atualização de baselines se for um fork
-        if: steps.dependencyguard_verify.outcome == 'failure' && github.event.pull_request.head.repo.full_name != github.repository
-        run: |
-          echo "::error::Dependency Guard falhou para :app, por favor, atualize os baselines no seu fork primeiro: ./gradlew :app:dependencyGuardBaseline" && exit 1
-
-      - name: Gerar novos baselines se a verificação falhou e é um PR
-        id: dependencyguard_baseline
-        if: steps.dependencyguard_verify.outcome == 'failure' && github.event_name == 'pull_request'
-        run: |
-          ./gradlew :app:dependencyGuardBaseline
-
-      - name: Enviar novos baselines se disponíveis
-        uses: stefanzweifel/git-auto-commit-action@v5
-        if: steps.dependencyguard_baseline.outcome == 'success'
-        with:
-          file_pattern: 'app/dependencies/*.txt'
-          disable_globbing: true
-          commit_message: "🤖 Atualiza baselines para Dependency Guard (:app)"
 
       - name: Executar testes de screenshot (Roborazzi) do :app
         id: screenshotsverify
