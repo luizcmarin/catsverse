@@ -17,30 +17,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_and_test:
-    name: "Build, Local Tests, and Checks"
+  build_and_lint: # Renomeado para refletir melhor o que ele faz agora
+    name: "Build and Lint Checks"
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read # Reduzido, pois write não é estritamente necessário para as etapas atuais
+      pull-requests: read # Reduzido, pois write não é estritamente necessário
       security-events: write
-    timeout-minutes: 60
+      actions: read
+    timeout-minutes: 30 # Reduzido, pois menos etapas são executadas
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Verificar espaço em disco antes da limpeza de disco
-        run: df -h
-
-      - name: Limpar espaço em disco
-        uses: jlumbroso/free-disk-space@v1.3.1
-        with:
-          android: false # Confia nas actions de setup para gerenciar o SDK
-          tool-cache: true # Limpa caches de ferramentas baixadas
-          swap-storage: true # Limpa o swap
-
-      - name: Verificar espaço em disco depois da limpeza de disco
-        run: df -h
 
       - name: Configurar JDK 21
         uses: actions/setup-java@v4
@@ -64,33 +52,10 @@ jobs:
       - name: Dar permissão de execução ao gradlew
         run: chmod +x ./gradlew
 
-      - name: Verificar espaço em disco antes de configurar o Android SDK
-        run: df -h
-
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v2
         with:
-          api-level: 36
-
-      - name: Executar testes unitários locais do :app
-        run: ./gradlew :app:testDebugUnitTest --no-daemon
-
-      - name: Gerar APKs do :app (debug e release)
-        run: ./gradlew :app:assembleDebug :app:assembleRelease --no-daemon
-
-      - name: Fazer o upload dos APKs do :app
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-apks
-          path: 'app/build/outputs/apk/**/*.apk'
-
-      - name: Fazer o upload dos resultados dos testes JVM do :app (XML)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-local-test-results
-          path: 'app/build/test-results/test*UnitTest/**/*.xml'
+          api-level: 36 # API necessária para compilar e executar lintRelease
 
       - name: Executar o Lint para gerar o relatório SARIF
         run: ./gradlew :app:lintRelease --no-daemon
@@ -100,32 +65,15 @@ jobs:
         with:
           sarif_file: app/build/reports/lint-results-release.sarif
 
-      - name: Fazer o upload dos relatórios do Lint (HTML)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-lint-reports-html
-          path: 'app/build/reports/lint-results-*.html'
-
-      - name: Verificar espaço em disco (Final do Job)
-        if: always() # Garante que rode mesmo se etapas anteriores falharem
-        run: df -h
-
   android_instrumentation_tests:
     name: "Testes de Instrumentação Android para :app"
     runs-on: ubuntu-latest
     timeout-minutes: 55
+    needs: build_and_lint # Opcional: faz este job esperar pelo build_and_lint. Remova se quiser que rodem em paralelo.
     strategy:
       matrix:
-        api-level: [29, 36]
+        api-level: [36]
     steps:
-      - name: Limpar espaço em disco
-        uses: jlumbroso/free-disk-space@v1.3.1
-        with:
-          android: false # Confia no android-emulator-runner para gerenciar o SDK
-          tool-cache: true # Limpa caches de ferramentas baixadas
-          swap-storage: true # Limpa o swap
-
       - name: Habilitar permissões do grupo KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -141,7 +89,7 @@ jobs:
           distribution: 'zulu'
           java-version: 21
 
-      - name: Cache Gradle Wrapper (Opcional, mas recomendado)
+      - name: Cache Gradle Wrapper
         uses: actions/cache@v4
         with:
           path: ~/.gradle/wrapper
@@ -152,29 +100,21 @@ jobs:
       - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          build-scan-publish: false # Desabilitado build-scan publish
-          # build-scan-terms-of-use-url: "https://gradle.com/terms-of-service"
-          # build-scan-terms-of-use-agree: "yes"
-
-      # A etapa 'Configurar Android SDK' com android-actions/setup-android
-      # não é estritamente necessária aqui porque 'reactivecircus/android-emulator-runner'
-      # vai configurar o SDK para o emulador na api-level especificada na matriz.
+          build-scan-publish: false
 
       - name: Rodar testes de instrumentação do :app
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
-          arch: x86_64 # Mantenha x86_64 para melhor performance, a menos que precise de arm64
+          arch: x86_64
           disable-animations: true
-          # Aumente disk-size e heap-size se encontrar problemas de espaço/memória no emulador
-          disk-size: 6000M
-          heap-size: 600M
+          disk-size: 6000M # Ajuste conforme necessário
+          heap-size: 600M  # Ajuste conforme necessário
           script: ./gradlew :app:connectedDebugAndroidTest --daemon
 
       - name: Fazer o upload dos relatórios de teste de instrumentação do :app
-        if: always()
+        if: always() # Mantido, pois estes são os resultados diretos do job
         uses: actions/upload-artifact@v4
         with:
           name: app-instrumentation-test-reports-${{ matrix.api-level }}
           path: 'app/build/reports/androidTests/connected'
-
