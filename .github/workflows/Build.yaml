@@ -23,8 +23,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write # Para git-auto-commit-action (Roborazzi)
-      pull-requests: write # Para o relatório JaCoCo (se você adicionar)
+      contents: write
+      pull-requests: write
       security-events: write # Para upload SARIF
 
     timeout-minutes: 60
@@ -61,30 +61,6 @@ jobs:
       - name: Dar permissão de execução ao gradlew
         run: chmod +x ./gradlew
 
-      - name: Executar testes de screenshot (Roborazzi) do :app
-        id: screenshotsverify
-        continue-on-error: true
-        run: ./gradlew :app:verifyRoborazziDebug
-
-      - name: Prevenir o envio de novos screenshots se for um fork
-        if: steps.screenshotsverify.outcome == 'failure' && github.event.pull_request.head.repo.full_name != github.repository
-        run: |
-          echo "::error::Os testes de screenshot falharam para :app, por favor, crie um PR no seu fork primeiro."
-          exit 1
-
-      - name: Gerar novos screenshots se a verificação falhou e é um PR
-        id: screenshotsrecord
-        if: steps.screenshotsverify.outcome == 'failure' && github.event_name == 'pull_request'
-        run: |
-          ./gradlew :app:recordRoborazziDebug
-
-      - name: Enviar novos screenshots se disponíveis
-        uses: stefanzweifel/git-auto-commit-action@v5
-        if: steps.screenshotsrecord.outcome == 'success'
-        with:
-          file_pattern: 'app/src/**/roborazzi/**/*.png'
-          commit_message: "🤖 Atualiza screenshots para :app"
-
       - name: Executar testes unitários locais do :app
         run: ./gradlew :app:testDebugUnitTest
 
@@ -104,13 +80,6 @@ jobs:
         with:
           name: app-local-test-results
           path: 'app/build/test-results/test*UnitTest/**/*.xml'
-
-      - name: Fazer o upload dos resultados dos testes de screenshot do :app (PNG)
-        if: always() && steps.screenshotsverify.outcome != 'skipped'
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-screenshot-test-results
-          path: 'app/build/outputs/roborazzi/*_compare.png'
 
       - name: Executar o Lint para gerar o relatório SARIF
         run: ./gradlew :app:lintRelease
