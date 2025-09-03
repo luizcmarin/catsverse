@@ -10,15 +10,6 @@ Obrigado por enviar um pull request. Para que possamos aceitá-lo, precisamos qu
 
 ### ✅ Garanta que os testes passem e que o código esteja formatado corretamente
 
-- Execute os testes locais na variante `DemoDebug` com o comando:  
-  ```bash
-  ./gradlew testDemoDebug
-  ```
-- Corrija a formatação do código com:  
-  ```bash
-  ./gradlew --init-script gradle/init.gradle.kts spotlessApply
-  ```
-
 ### 📝 Adicione uma descrição
 
 Precisamos saber **o que você fez** e **por que fez**.  
