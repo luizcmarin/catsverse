@@ -29,7 +29,7 @@ enum class StatusTransacao(@StringRes val displayNameResId: Int) {
 }
 
 // Enum para representar a escolha do usuário
-enum class ThemePreference {
+enum class PreferenciaTema {
     SYSTEM, LIGHT, DARK
 }
 

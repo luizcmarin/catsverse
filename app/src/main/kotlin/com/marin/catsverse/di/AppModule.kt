@@ -14,6 +14,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import com.marin.catsverse.data.PreferenciasRepository
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -39,6 +40,15 @@ object AppModule {
             // Adicione aqui migrações se/quando você alterar a versão do banco de dados
             // .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
             .build()
+    }
+
+    /**
+     * Fornece uma instância singleton de Preferências do Usuário.
+     */
+    @Singleton
+    @Provides
+    fun providePreferenciasRepository(@ApplicationContext context: Context): PreferenciasRepository {
+        return PreferenciasRepository(context)
     }
 
     /**

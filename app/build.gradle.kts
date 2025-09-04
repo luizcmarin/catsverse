@@ -77,6 +77,7 @@ android {
         }
         jniLibs {
             keepDebugSymbols += "**/libandroidx.graphics.path.so"
+            keepDebugSymbols += "**/libdatastore_shared_counter.so"
         }
     }
 
@@ -109,4 +110,71 @@ dependencies {
     androidTestImplementation(libs.bundles.compose.testing)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+tasks.register("openDebugLintReport") {
+    description = "Abre o relatório HTML do Lint para a variante debug no navegador padrão."
+    group = "Verification"
+    val reportFile = project.layout.buildDirectory.file("reports/lint-results-debug.html")
+    doLast {
+        if (reportFile.get().asFile.exists()) {
+            val reportPath = reportFile.get().asFile.absolutePath
+            println("Abrindo relatório do Lint: $reportPath")
+            val os = System.getProperty("os.name").lowercase()
+            try {
+                when {
+                    os.contains("win") -> Runtime.getRuntime().exec(arrayOf("cmd", "/c", "start", "\"\"", reportPath))
+                    os.contains("mac") -> Runtime.getRuntime().exec(arrayOf("open", reportPath))
+                    os.contains("nix") || os.contains("nux") || os.contains("aix") -> Runtime.getRuntime().exec(arrayOf("xdg-open", reportPath))
+                    else -> println("SO não suportado para abrir auto.")
+                }
+            } catch (e: Exception) {
+                println("Erro ao abrir relatório Lint: ${e.message}")
+            }
+        } else {
+            println("Relatório Lint debug não encontrado: ${reportFile.get().asFile.absolutePath}")
+        }
+    }
+}
+
+tasks.register("openReleaseLintReport") {
+    description = "Abre o relatório HTML do Lint para a variante release no navegador padrão."
+    group = "Verification"
+    val reportFile = project.layout.buildDirectory.file("reports/lint-results-release.html")
+    doLast {
+        if (reportFile.get().asFile.exists()) {
+            val reportPath = reportFile.get().asFile.absolutePath
+            println("Abrindo relatório do Lint (Release): $reportPath")
+            val os = System.getProperty("os.name").lowercase()
+            try {
+                when {
+                    os.contains("win") -> Runtime.getRuntime().exec(arrayOf("cmd", "/c", "start", "\"\"", reportPath))
+                    os.contains("mac") -> Runtime.getRuntime().exec(arrayOf("open", reportPath))
+                    os.contains("nix") || os.contains("nux") || os.contains("aix") -> Runtime.getRuntime().exec(arrayOf("xdg-open", reportPath))
+                    else -> println("SO não suportado.")
+                }
+            } catch (e: Exception) {
+                println("Erro ao abrir relatório (Release): ${e.message}")
+            }
+        } else {
+            println("Relatório Lint (Release) não encontrado: ${reportFile.get().asFile.absolutePath}")
+        }
+    }
+}
+
+// Adia a configuração de finalizedBy para depois que o projeto for avaliado
+project.afterEvaluate {
+    // Para Debug
+    project.tasks.findByName("lintReportDebug")?.let { lintTask ->
+        project.tasks.findByName("openDebugLintReport")?.let { openReportTask ->
+            lintTask.finalizedBy(openReportTask)
+        } ?: println("AVISO: Tarefa 'openDebugLintReport' não encontrada para configurar finalizedBy.")
+    } ?: println("AVISO: Tarefa 'lintReportDebug' não encontrada para configurar finalizedBy.")
+
+    // Para Release
+    project.tasks.findByName("lintReportRelease")?.let { lintTask ->
+        project.tasks.findByName("openReleaseLintReport")?.let { openReportTask ->
+            lintTask.finalizedBy(openReportTask)
+        } ?: println("AVISO: Tarefa 'openReleaseLintReport' não encontrada para configurar finalizedBy.")
+    } ?: println("AVISO: Tarefa 'lintReportRelease' não encontrada para configurar finalizedBy.")
 }

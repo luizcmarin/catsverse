@@ -1,6 +1,10 @@
 // =============================================================================
 // Arquivo: com.marin.catsverse.MainActivity.kt
-// Descrição: Atividade principal que inicializa o aplicativo.
+// Descrição: Atividade principal que inicializa o aplicativo CatsVerse.
+//            Responsável pela configuração da tela de splash (padrão e Lottie),
+//            gerenciamento do tema do aplicativo (claro/escuro/sistema) com base
+//            nas preferências do usuário (obtidas via PreferenciasViewModel),
+//            e pela configuração do comportamento edge-to-edge da UI.
 // =============================================================================
 package com.marin.catsverse
 
@@ -12,14 +16,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+// Remover Text se não for usado diretamente aqui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,31 +41,25 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.marin.catsverse.dominio.ThemePreference
+import com.marin.catsverse.dominio.PreferenciaTema
+import com.marin.catsverse.ui.preferencias.PreferenciasViewModel
 import com.marin.catsverse.ui.theme.CatsVerseTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    // Variável para controlar a visibilidade da splash screen padrão
     private var keepSplashScreenOn = true
+    private val preferenciasViewModel: PreferenciasViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Instala a splash screen. DEVE ser chamado antes de super.onCreate() ou setContent().
-        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
 
-        // Mantenha a splash screen padrão visível até que nossa UI personalizada (Lottie)
-        // sinalize que está pronta.
+        val splashScreen = installSplashScreen()
         splashScreen.setKeepOnScreenCondition { keepSplashScreenOn }
 
-        // Animação de saída para a splash screen PADRÃO (aquela com o ícone do Android).
-        // Isso acontece quando keepSplashScreenOn se torna false.
         splashScreen.setOnExitAnimationListener { splashScreenViewProvider ->
             val splashScreenView = splashScreenViewProvider.view
-            // Exemplo de animação de fade out para a view da splash screen padrão
             val fadeOut = ObjectAnimator.ofFloat(
                 splashScreenView,
                 View.ALPHA,
@@ -66,9 +67,7 @@ class MainActivity : ComponentActivity() {
                 0f
             )
             fadeOut.interpolator = AnticipateInterpolator()
-            fadeOut.duration = 300L // Duração curta para a transição para a Lottie
-
-            // Chame remove() quando a animação terminar.
+            fadeOut.duration = 300L
             fadeOut.doOnEnd {
                 splashScreenViewProvider.remove()
             }
@@ -76,79 +75,47 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            // Lógica do tema (adapte se necessário)
-            val userThemePreference = ThemePreference.SYSTEM // Exemplo, use sua lógica real
+            val preferenciaTemaAtual by preferenciasViewModel.preferenciaTema.collectAsState()
             val systemIsDark = isSystemInDarkTheme()
-            val actualDarkTheme = when (userThemePreference) {
-                ThemePreference.SYSTEM -> systemIsDark
-                ThemePreference.LIGHT -> false
-                ThemePreference.DARK -> true
+
+            val aplicarTemaEscuro = when (preferenciaTemaAtual) {
+                PreferenciaTema.SYSTEM -> systemIsDark
+                PreferenciaTema.LIGHT -> false
+                PreferenciaTema.DARK -> true
             }
 
-
-
-            // Chamada inicial de enableEdgeToEdge fora do LaunchedEffect
-            // para aplicar o estilo assim que possível.
-            // O LaunchedEffect ainda é útil se actualDarkTheme puder mudar dinamicamente
-            // enquanto a activity está viva (embora raro para tema base).
-            DisposableEffect(Unit) { // Ou simplesmente chame enableEdgeToEdge aqui diretamente
+            DisposableEffect(aplicarTemaEscuro) {
                 enableEdgeToEdge(
                     statusBarStyle = SystemBarStyle.auto(
                         Color.Transparent.toArgb(),
                         Color.Transparent.toArgb(),
-                        detectDarkMode = { actualDarkTheme }
-                    ),
-                    navigationBarStyle = SystemBarStyle.auto(
-                        Color.Transparent.toArgb(), // Scrim transparente para modo claro
-                        Color.Transparent.toArgb(), // Scrim transparente para modo escuro
-                        detectDarkMode = { actualDarkTheme }
-                    )
-                )
-                onDispose { }
-            }
-
-            // Se actualDarkTheme pode mudar e você quer que as barras reajam,
-            // o LaunchedEffect ainda é bom.
-            // Se actualDarkTheme é determinado uma vez no início,
-            // chamar enableEdgeToEdge diretamente antes de CatsVerseTheme pode ser suficiente.
-            // Para consistência com seu código original, mantendo LaunchedEffect:
-            LaunchedEffect(actualDarkTheme) {
-                enableEdgeToEdge( // Esta chamada pode ser redundante se a chamada no DisposableEffect já fez o trabalho
-                    // e actualDarkTheme não muda. Mas não deve causar problemas.
-                    statusBarStyle = SystemBarStyle.auto(
-                        Color.Transparent.toArgb(),
-                        Color.Transparent.toArgb(),
-                        detectDarkMode = { actualDarkTheme }
+                        detectDarkMode = { aplicarTemaEscuro }
                     ),
                     navigationBarStyle = SystemBarStyle.auto(
                         Color.Transparent.toArgb(),
                         Color.Transparent.toArgb(),
-                        detectDarkMode = { actualDarkTheme }
+                        detectDarkMode = { aplicarTemaEscuro }
                     )
                 )
+                onDispose {}
             }
 
             CatsVerseTheme(
-                userThemePreference = userThemePreference,
-                // dynamicColor = true // Se você tiver essa opção no seu tema
+                darkTheme = aplicarTemaEscuro
             ) {
                 var showLottieSplash by remember { mutableStateOf(true) }
 
                 if (showLottieSplash) {
                     AppEntry(
                         onAnimationFinish = {
-                            showLottieSplash = false // Transita para o MainScreen
+                            showLottieSplash = false
                         },
                         signalSplashScreenReadyToDismiss = {
-                            // Este é o ponto onde dizemos à splash padrão que
-                            // nossa UI personalizada (Lottie) está pronta para ser mostrada,
-                            // então a splash padrão pode começar sua animação de saída.
-                            this.keepSplashScreenOn = false // Use this. para acessar a propriedade da classe
+                            this@MainActivity.keepSplashScreenOn = false
                         }
                     )
                 } else {
-                    // Substitua Surface + MainScreen pelo seu Composable raiz do app,
-                    // que provavelmente já está em MainScreen()
+                    // Chama a sua função MainScreen REAL definida em com.marin.catsverse.MainScreen.kt
                     MainScreen()
                 }
             }
@@ -156,9 +123,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/**
- * Composable para exibir a animação Lottie como parte da experiência de inicialização.
- */
 @Composable
 fun AppEntry(
     onAnimationFinish: () -> Unit,
@@ -167,12 +131,10 @@ fun AppEntry(
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.catsverse_pata))
     val progress by animateLottieCompositionAsState(
         composition,
-        iterations = 1, // Execute a animação uma vez
-        speed = 1f      // Velocidade da animação
+        iterations = 1,
+        speed = 1f
     )
 
-    // Sinaliza que a UI está pronta para ser desenhada, então a splash padrão pode começar a sair.
-    // Isso é chamado quando AppEntry começa a ser composto.
     LaunchedEffect(Unit) {
         signalSplashScreenReadyToDismiss()
     }
@@ -180,22 +142,19 @@ fun AppEntry(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background), // Use a cor de fundo desejada
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         LottieAnimation(
             composition = composition,
             progress = { progress },
-            modifier = Modifier.fillMaxSize(0.7f) // Ajuste o tamanho da animação conforme necessário
+            modifier = Modifier.fillMaxSize(0.7f)
         )
     }
 
-    // Quando a animação Lottie terminar (progress == 1.0f para uma iteração),
-    // chama onAnimationFinish para transitar para a tela principal.
     LaunchedEffect(progress) {
         if (progress == 1.0f) {
             onAnimationFinish()
         }
     }
 }
-

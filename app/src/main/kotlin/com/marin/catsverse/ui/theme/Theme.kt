@@ -1,137 +1,100 @@
 // =============================================================================
 // Arquivo: com.marin.catsverse.ui.theme.Theme.kt
 // Descrição: Define o tema principal do aplicativo CatsVerse para Jetpack Compose.
-//            Inclui a configuração dos esquemas de cores claro e escuro
-//            (baseados nas cores Bootstrap definidas em Color.kt), tipografia e formas.
-//            Permite alternar entre tema claro, escuro ou seguir o sistema,
-//            com a opção de cores dinâmicas (Material You) atualmente desabilitada.
+//            Este arquivo configura os esquemas de cores (ColorScheme) para os
+//            modos claro e escuro, integra a tipografia (Typography) e as
+//            formas (Shapes) definidas em outros arquivos do tema.
+//            Também inclui lógica para suportar cores dinâmicas (Material You)
+//            em dispositivos Android 12+ e para respeitar a preferência de
+//            tema do sistema do usuário.
 // =============================================================================
 package com.marin.catsverse.ui.theme
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import com.marin.catsverse.dominio.ThemePreference
+import androidx.compose.ui.platform.LocalContext
 
-/**
- * Esquema de cores claro para o tema CatsVerse, derivado das cores Bootstrap.
- * Utiliza as definições de cores `Light*` de `Color.kt`.
- */
-private val BsLightColorScheme = lightColorScheme(
+// Esquema de Cores para o Tema Escuro
+private val DarkColorScheme = darkColorScheme(
+    primary = DarkPrimary,
+    onPrimary = DarkOnPrimary,
+    primaryContainer = DarkPrimaryContainer,
+    onPrimaryContainer = DarkOnPrimaryContainer,
+    secondary = DarkSecondary,
+    onSecondary = DarkOnSecondary,
+    background = DarkBackground,
+    onBackground = DarkOnBackground,
+    surface = DarkSurface,
+    onSurface = DarkOnSurface,
+    // Preencha outras cores conforme necessário: tertiary, error, etc.
+    // Exemplo:
+    // tertiary = DarkTertiary,
+    // onTertiary = DarkOnTertiary,
+    // error = DarkError,
+    // onError = DarkOnError,
+    // surfaceVariant = DarkSurfaceVariant,
+    // onSurfaceVariant = DarkOnSurfaceVariant,
+    // outline = DarkOutline
+)
+
+// Esquema de Cores para o Tema Claro
+private val LightColorScheme = lightColorScheme(
     primary = LightPrimary,
     onPrimary = LightOnPrimary,
     primaryContainer = LightPrimaryContainer,
     onPrimaryContainer = LightOnPrimaryContainer,
     secondary = LightSecondary,
     onSecondary = LightOnSecondary,
-    secondaryContainer = LightSecondaryContainer,
-    onSecondaryContainer = LightOnSecondaryContainer,
-    tertiary = LightTertiary,
-    onTertiary = LightOnTertiary,
-    tertiaryContainer = LightTertiaryContainer,
-    onTertiaryContainer = LightOnTertiaryContainer,
-    error = LightError,
-    onError = LightOnError,
-    errorContainer = LightErrorContainer,
-    onErrorContainer = LightOnErrorContainer,
     background = LightBackground,
     onBackground = LightOnBackground,
     surface = LightSurface,
     onSurface = LightOnSurface,
-    surfaceVariant = LightSurfaceVariant,
-    onSurfaceVariant = LightOnSurfaceVariant,
-    outline = LightOutline,
-    inverseOnSurface = LightInverseOnSurface,
-    inverseSurface = LightInverseSurface,
-    inversePrimary = LightInversePrimary,
-    surfaceTint = LightSurfaceTint,
-    outlineVariant = LightOutlineVariant,
-    scrim = LightScrim
+    // Preencha outras cores conforme necessário
+    // Exemplo:
+    // tertiary = LightTertiary,
+    // onTertiary = LightOnTertiary,
+    // error = LightError,
+    // onError = LightOnError,
+    // surfaceVariant = LightSurfaceVariant,
+    // onSurfaceVariant = LightOnSurfaceVariant,
+    // outline = LightOutline
+
+    /* Outras cores padrão serão sobrescritas se você as definir aqui.
+      As cores não definidas explicitamente usarão os padrões do Material3.
+    */
 )
 
-/**
- * Esquema de cores escuro para o tema CatsVerse, derivado das cores Bootstrap.
- * Utiliza as definições de cores `Dark*` de `Color.kt`.
- */
-private val BsDarkColorScheme = darkColorScheme(
-    primary = DarkPrimary,
-    onPrimary = DarkOnPrimary,
-    primaryContainer = DarkPrimaryContainer,
-    onPrimaryContainer = DarkOnPrimaryContainer,
-    secondary = DarkSecondary,
-    onSecondary = LightOnSecondary, // Nota: Verifique se DarkOnSecondary não deveria ser DarkOnSecondary de Color.kt
-    secondaryContainer = DarkSecondaryContainer,
-    onSecondaryContainer = DarkOnSecondaryContainer,
-    tertiary = DarkTertiary,
-    onTertiary = DarkOnTertiary,
-    tertiaryContainer = DarkTertiaryContainer,
-    onTertiaryContainer = DarkOnTertiaryContainer,
-    error = DarkError,
-    onError = DarkOnError,
-    errorContainer = DarkErrorContainer,
-    onErrorContainer = DarkOnErrorContainer,
-    background = DarkBackground,
-    onBackground = DarkOnBackground,
-    surface = DarkSurface,
-    onSurface = DarkOnSurface,
-    surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = DarkOnSurfaceVariant,
-    outline = DarkOutline,
-    inverseOnSurface = DarkInverseOnSurface,
-    inverseSurface = DarkInverseSurface,
-    inversePrimary = DarkInversePrimary,
-    surfaceTint = DarkSurfaceTint,
-    outlineVariant = DarkOutlineVariant,
-    scrim = DarkScrim
-)
-
-/**
- * Aplica o tema principal do aplicativo CatsVerse ao conteúdo Composable.
- *
- * Este tema configura o [MaterialTheme] com esquemas de cores personalizados
- * (claro e escuro, baseados em Bootstrap), tipografia ([BsTypography]) e formas ([BsShapes]).
- * Ele permite que o usuário escolha entre tema claro, escuro ou seguir a configuração do sistema
- * através de [userThemePreference].
- *
- * A funcionalidade de cores dinâmicas (Material You) está atualmente desabilitada por padrão
- * (`dynamicColor = false`). Se habilitada, usaria as cores do sistema no Android 12+.
- *
- * @param userThemePreference A preferência de tema do usuário (claro, escuro ou sistema).
- *                            Padrão é [ThemePreference.SYSTEM].
- * @param dynamicColor Se `true`, tentaria usar cores dinâmicas (Material You) no Android 12+.
- *                     Atualmente definido como `false` por padrão, o que significa que as cores
- *                     dinâmicas não são aplicadas e os esquemas definidos ([BsLightColorScheme]
- *                     e [BsDarkColorScheme]) são sempre usados.
- * @param content O conteúdo Composable ao qual o tema será aplicado.
- */
 @Composable
-fun CatsVerseTheme(
-    userThemePreference: ThemePreference = ThemePreference.SYSTEM,
-    dynamicColor: Boolean = false, // Cores dinâmicas desabilitadas por padrão
+fun CatsVerseTheme( // Renomeie para o nome do seu tema, ex: CatsVerseTheme
+    darkTheme: Boolean = isSystemInDarkTheme(), // Respeita a configuração do sistema por padrão
+    // Dynamic color é um recurso do Android 12+ (Material You)
+    // Se ativado, as cores do app são baseadas no papel de parede do usuário.
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val systemIsDark = isSystemInDarkTheme()
-    val actualDarkTheme = when (userThemePreference) {
-        ThemePreference.SYSTEM -> systemIsDark
-        ThemePreference.LIGHT -> false
-        ThemePreference.DARK -> true
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+        darkTheme -> DarkColorScheme
+        else -> LightColorScheme
     }
 
-    // Seleciona o ColorScheme com base na preferência do usuário e se o sistema está em modo escuro.
-    // A lógica de dynamicColor foi removida daqui, pois o parâmetro dynamicColor é false por padrão
-    // e os imports relacionados foram comentados. Se dynamicColor for reativado,
-    // a lógica para selecionar dynamicLightColorScheme/dynamicDarkColorScheme precisaria ser restaurada.
-    val colorScheme = when {
-        actualDarkTheme -> BsDarkColorScheme
-        else -> BsLightColorScheme
-    }
+    // Você pode adicionar aqui configurações de StatusBar e NavigationBar se desejar
+    // Por exemplo, usando Accompanist System UI Controller (se ainda estiver usando)
+    // ou as APIs mais recentes do Compose para isso.
 
     MaterialTheme(
         colorScheme = colorScheme,
-        shapes = BsShapes,
+        typography = Typography,
+        shapes = Shapes,
         content = content
     )
 }
-
