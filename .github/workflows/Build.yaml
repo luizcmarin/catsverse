@@ -57,8 +57,6 @@ jobs:
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          api-level: 34 # API necessária para compilar e executar lintRelease
 
       - name: Executar o Lint para gerar o relatório SARIF
         run: ./gradlew :app:lintRelease --no-daemon
