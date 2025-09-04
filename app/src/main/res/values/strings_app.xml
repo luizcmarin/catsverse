@@ -3,4 +3,8 @@
     <string name="app_name">CatsVerse</string>
     <string name="app_versao">Versão %s</string>
     <string name="app_desenvolvido_por">Desenvolvido por Marin</string>
+    <string name="tema_escuro">Escuro</string>
+    <string name="tema_claro">Claro</string>
+    <string name="tema_do_aplicativo">Tema</string>
+    <string name="tema_padrao_sistema">Automático</string>
 </resources>

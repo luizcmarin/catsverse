@@ -49,9 +49,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.marin.catsverse.dominio.PreferenciaTema
-import com.marin.catsverse.ui.Icones
+import com.marin.catsverse.ui.Icones // Certifique-se que Icones.Menu está definido
 import com.marin.catsverse.ui.preferencias.PreferenciasViewModel
 import com.marin.catsverse.ui.theme.CatsVerseTheme
 import kotlinx.coroutines.launch
@@ -59,34 +60,46 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    // Injeta o PreferenciasViewModel. Ele será usado para obter e atualizar o tema.
     preferenciasViewModel: PreferenciasViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
     var optionsMenuExpanded by remember { mutableStateOf(false) }
-
-    // Coleta a preferência de tema atual do ViewModel
     val preferenciaTemaAtual by preferenciasViewModel.preferenciaTema.collectAsState()
 
     ModalNavigationDrawer(
         drawerContent = {
             ModalDrawerSheet {
-                AppRoutes.routes.forEach { item ->
-                    val itemTitle = stringResource(id = item.titleResId)
+                Spacer(Modifier.padding(top = 12.dp)) // Espaçamento no topo do drawer
+                // Usa a lista AppMenuItems.drawerNavigationItems (ou a lista que você destinou para o drawer)
+                AppMenuItems.drawerNavigationItems.forEach { menuItem ->
+                    val itemTitle = stringResource(id = menuItem.titleResId)
                     NavigationDrawerItem(
-                        icon = { Icon(item.icon, contentDescription = itemTitle) },
+                        icon = { Icon(menuItem.icon, contentDescription = itemTitle) },
                         label = { Text(text = itemTitle) },
-                        selected = false,
+                        selected = currentRoute == menuItem.route,
                         onClick = {
-                            navController.navigate(item.route) {
+                            navController.navigate(menuItem.route) {
+                                // Pop up to the start destination of the graph to
+                                // avoid building up a large stack of destinations
+                                // on the back stack as users select items
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = true
+                                }
+                                // Avoid multiple copies of the same destination when
+                                // reselecting the same item
                                 launchSingleTop = true
+                                // Restore state when reselecting a previously selected item
+                                restoreState = true
                             }
                             scope.launch { drawerState.close() }
                         },
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                     )
                 }
             }
@@ -103,34 +116,39 @@ fun MainScreen(
                     ),
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icones.Menu, contentDescription = stringResource(R.string.abrir_menu_de_navegacao))
+                            Icon(
+                                Icones.Menu, // Certifique-se que Icones.Menu existe
+                                contentDescription = stringResource(R.string.abrir_menu_de_navegacao)
+                            )
                         }
                     },
                     actions = {
                         IconButton(onClick = { optionsMenuExpanded = true }) {
-                            Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.mais_opcoes))
+                            Icon(
+                                Icons.Filled.MoreVert,
+                                contentDescription = stringResource(R.string.mais_opcoes)
+                            )
                         }
 
                         DropdownMenu(
                             expanded = optionsMenuExpanded,
                             onDismissRequest = { optionsMenuExpanded = false }
                         ) {
-                            // Seção de Seleção de Tema dentro do DropdownMenu
                             Text(
-                                text = "Tema do Aplicativo", // Título para a seção de tema
+                                text = stringResource(R.string.tema_do_aplicativo),
                                 style = MaterialTheme.typography.titleSmall,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
                             ThemeDropdownOption(
-                                text = "Claro",
+                                text = stringResource(R.string.tema_claro),
                                 selected = preferenciaTemaAtual == PreferenciaTema.LIGHT,
                                 onClick = {
                                     preferenciasViewModel.updatePreferenciaTema(PreferenciaTema.LIGHT)
-                                    optionsMenuExpanded = false // Fecha o menu
+                                    optionsMenuExpanded = false
                                 }
                             )
                             ThemeDropdownOption(
-                                text = "Escuro",
+                                text = stringResource(R.string.tema_escuro),
                                 selected = preferenciaTemaAtual == PreferenciaTema.DARK,
                                 onClick = {
                                     preferenciasViewModel.updatePreferenciaTema(PreferenciaTema.DARK)
@@ -138,7 +156,7 @@ fun MainScreen(
                                 }
                             )
                             ThemeDropdownOption(
-                                text = "Padrão do Sistema",
+                                text = stringResource(R.string.tema_padrao_sistema),
                                 selected = preferenciaTemaAtual == PreferenciaTema.SYSTEM,
                                 onClick = {
                                     preferenciasViewModel.updatePreferenciaTema(PreferenciaTema.SYSTEM)
@@ -152,15 +170,18 @@ fun MainScreen(
                                 color = DividerDefaults.color
                             )
 
-                            // Item de menu "Sobre"
-                            val sobreRouteInfo = AppRoutes.routes.find { it.route == "sobre" }
-                            sobreRouteInfo?.let { routeInfo ->
+                            // Item de menu "Sobre" usando NavDestinations e AppMenuItems
+                            // Encontra o item "Sobre" na lista de itens do drawer ou uma lista específica de itens de menu de opções
+                            val sobreMenuItem = AppMenuItems.drawerNavigationItems.find { it.route == NavDestinations.SOBRE }
+                            sobreMenuItem?.let { item ->
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(id = routeInfo.titleResId)) },
+                                    text = { Text(stringResource(id = item.titleResId)) },
                                     onClick = {
-                                        navController.navigate(routeInfo.route)
+                                        navController.navigate(item.route)
                                         optionsMenuExpanded = false
-                                    }
+                                    },
+                                    // Opcional: Adicionar ícone ao DropdownMenuItem também
+                                    // leadingIcon = { Icon(item.icon, contentDescription = null) }
                                 )
                             }
                             // Adicione mais DropdownMenuItems aqui se necessário
@@ -177,10 +198,6 @@ fun MainScreen(
     }
 }
 
-/**
- * Composable auxiliar para exibir uma opção de tema no DropdownMenu.
- * Inclui um RadioButton e texto.
- */
 @Composable
 private fun ThemeDropdownOption(
     text: String,
@@ -195,13 +212,13 @@ private fun ThemeDropdownOption(
             ) {
                 RadioButton(
                     selected = selected,
-                    onClick = null // O clique é tratado pelo DropdownMenuItem
+                    onClick = null
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(text)
             }
         },
-        onClick = onClick // O clique no item inteiro dispara a ação
+        onClick = onClick
     )
 }
 
@@ -209,11 +226,7 @@ private fun ThemeDropdownOption(
 @Composable
 fun MainScreenPreview() {
     CatsVerseTheme {
-        // Para o preview funcionar sem um ViewModel real, você pode precisar
-        // criar um mock ou não passar o ViewModel aqui, mas isso limitaria
-        // a funcionalidade do preview referente ao tema.
-        // Para um preview simples da UI estática:
-        MainScreen(preferenciasViewModel = hiltViewModel()) // Ou um mock ViewModel
+        MainScreen(preferenciasViewModel = hiltViewModel())
     }
 }
 
