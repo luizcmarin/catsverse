@@ -56,7 +56,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Configurar Android SDK
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
         with:
           api-level: 36 # API necessária para compilar e executar lintRelease
 
