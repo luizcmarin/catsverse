@@ -108,6 +108,9 @@ jobs:
         with:
           build-scan-publish: false
 
+      - name: Dar permissão de execução ao gradlew
+        run: chmod +x ./gradlew
+
       - name: Rodar testes de instrumentação do :app
         uses: reactivecircus/android-emulator-runner@v2
         with:
