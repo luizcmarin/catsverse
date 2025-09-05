@@ -6,7 +6,7 @@
     <string name="label_data">Data</string>
     <string name="label_categoria">Categoria</string>
     <string name="label_categoria_label">Categoria: %1$s</string>
-    <string name="label_tipo_conta">Tipo de Conta</string>
+    <string name="label_tipo">Tipo</string>
     <string name="label_data_vencimento">Data de Vencimento</string>
     <string name="label_data_vencimento_label">Data de Vencimento: %1$s</string>
     <string name="label_selecionar_data_vencimento">Selecione a data de vencimento</string>

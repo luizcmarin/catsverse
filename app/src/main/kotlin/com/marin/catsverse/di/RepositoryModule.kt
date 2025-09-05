@@ -5,13 +5,15 @@
 // =============================================================================
 package com.marin.catsverse.di
 
-import com.marin.catsverse.data.repository.FormaPagamentoRepository
-import com.marin.catsverse.data.repository.FormaPagamentoRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import com.marin.catsverse.data.repository.CategoriaRepository
+import com.marin.catsverse.data.repository.CategoriaRepositoryImpl
+import com.marin.catsverse.data.repository.FormaPagamentoRepository
+import com.marin.catsverse.data.repository.FormaPagamentoRepositoryImpl
 
 /**
  * Módulo Hilt que define como as interfaces de repositório devem ser injetadas
@@ -32,12 +34,11 @@ abstract class RepositoryModule {
         impl: FormaPagamentoRepositoryImpl
     ): FormaPagamentoRepository
 
-    // Adicione outros métodos @Binds para outros repositórios aqui.
-    // Exemplo:
-    // @Binds
-    // @Singleton
-    // abstract fun bindOutroRepository(
-    //     impl: OutroRepositoryImpl
-    // ): OutroRepository
+    @Binds
+    @Singleton
+    abstract fun bindCategoriaRepository(
+        impl: CategoriaRepositoryImpl
+    ): CategoriaRepository
+
 }
 

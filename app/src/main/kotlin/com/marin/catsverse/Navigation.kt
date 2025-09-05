@@ -16,6 +16,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.marin.catsverse.ui.Icones
+import com.marin.catsverse.ui.categorias.CategoriaScreen
 import com.marin.catsverse.ui.formasPagamento.FormaPagamentoScreen
 import com.marin.catsverse.ui.screens.PrivacyPolicyScreen
 import com.marin.catsverse.ui.screens.SobreScreen
@@ -23,41 +24,39 @@ import com.marin.catsverse.ui.screens.SobreScreen
 // --- Definições de Rota ---
 object NavDestinations {
     const val INICIO = "inicio"
+    const val CATEGORIAS = "categorias"
     const val FORMA_PAGAMENTO = "forma_pagamento"
     const val TAREFAS = "tarefas"
     const val SOBRE = "sobre"
     const val POLITICA_PRIVACIDADE = "politica_privacidade"
 }
 
-// --- Estrutura de Dados para Itens de Menu ---
-data class MenuItemData( // Renomeado para MenuItemData para evitar conflito se você tiver um Composable MenuItem
+data class MenuItemData(
     val route: String,
     @StringRes val titleResId: Int,
     val icon: ImageVector
 )
 
-// --- Lista de Itens de Menu (para BottomNavigation, Drawer, etc.) ---
-// Você pode ter listas diferentes para diferentes menus, se necessário.
 object AppMenuItems {
     val bottomNavigationItems = listOf(
         MenuItemData(
             route = NavDestinations.INICIO,
-            titleResId = R.string.titulo_inicio, // Certifique-se que R.string.titulo_inicio existe
-            icon = Icones.Inicio // Certifique-se que Icones.Inicio existe
+            titleResId = R.string.titulo_inicio,
+            icon = Icones.Inicio
         ),
         MenuItemData(
             route = NavDestinations.FORMA_PAGAMENTO,
-            titleResId = R.string.titulo_forma_pagamento, // E R.string.titulo_forma_pagamento
-            icon = Icones.FormaPagamento // E Icones.FormaPagamento
+            titleResId = R.string.titulo_forma_pagamento,
+            icon = Icones.FormaPagamento
         ),
         MenuItemData(
             route = NavDestinations.TAREFAS,
-            titleResId = R.string.titulo_tarefas, // E R.string.titulo_tarefas
-            icon = Icones.Tarefas // E Icones.Tarefas
+            titleResId = R.string.titulo_tarefas,
+            icon = Icones.Tarefas
         )
-        // Adicione mais itens aqui conforme necessário para sua barra de navegação inferior
     )
 
+    // Adicione mais itens para a gaveta de navegação aqui
     val drawerNavigationItems = listOf(
         MenuItemData(
             route = NavDestinations.INICIO,
@@ -65,13 +64,21 @@ object AppMenuItems {
             icon = Icones.Inicio
         ),
         MenuItemData(
+            route = NavDestinations.CATEGORIAS,
+            titleResId = R.string.titulo_categorias,
+            icon = Icones.Categoria
+        ),
+        MenuItemData(
+            route = NavDestinations.FORMA_PAGAMENTO,
+            titleResId = R.string.titulo_forma_pagamento,
+            icon = Icones.FormaPagamento
+        ),
+        MenuItemData(
             route = NavDestinations.SOBRE,
             titleResId = R.string.titulo_sobre,
             icon = Icones.Sobre
         )
-        // Adicione mais itens para a gaveta de navegação aqui
     )
-    // Você pode adicionar outras listas para outros menus aqui
 }
 
 
@@ -87,6 +94,12 @@ fun CatsVerseNavGraph(
         modifier = modifier
     ) {
         composable(NavDestinations.INICIO) { PlaceholderScreen("Início") }
+
+        composable(NavDestinations.CATEGORIAS) {
+            CategoriaScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
 
         composable(NavDestinations.FORMA_PAGAMENTO) {
             FormaPagamentoScreen(

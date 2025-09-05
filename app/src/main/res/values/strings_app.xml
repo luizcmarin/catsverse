@@ -7,4 +7,6 @@
     <string name="tema_claro">Claro</string>
     <string name="tema_do_aplicativo">Tema</string>
     <string name="tema_padrao_sistema">Automático</string>
+    <string name="tema_atual_selecionado_descricao">Indica que este é o tema atualmente selecionado</string>
+    <string name="abrir_menu_de_navegacao">Abrir menu de navegação</string>
 </resources>

@@ -1,22 +1,29 @@
 // =============================================================================
-// Arquivo: com.marin.catsverse.ui.common.FormFields.kt
+// Arquivo: com.marin.catsverse.ui.dominio.FormFields.kt
 // Descrição: Componentes de UI reutilizáveis para formulários.
 // =============================================================================
-package com.marin.catsverse.ui.common
+package com.marin.catsverse.dominio
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun AppOutlinedTextField(
@@ -54,25 +61,29 @@ fun <T> AppExposedDropdownMenu(
     options: List<T>,
     selectedOption: T,
     onOptionSelected: (T) -> Unit,
-    optionToString: (T) -> String, // Função para converter T para String para exibição
+    selectedOptionToString: @Composable (T) -> String, // << RENOMEADO: Para o TextField principal
+    dropdownItemContent: @Composable (T) -> Unit, // << NOVO: Para o conteúdo de cada item no menu
     modifier: Modifier = Modifier,
-    leadingIconProvider: ((T) -> ImageVector?)? = null, // Opcional: Provedor de ícone para a opção selecionada
+    leadingIconProvider: ((T) -> ImageVector?)? = null,
     enabled: Boolean = true
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val selectedOptionText = optionToString(selectedOption)
+    // O selectedOptionText para o OutlinedTextField é obtido aqui.
+    // A função selectedOptionToString DEVE retornar uma String.
+    // Se precisar de stringResource aqui, ele deve ser chamado ANTES de passar para AppExposedDropdownMenu.
+    val currentSelectedOptionText = selectedOptionToString(selectedOption)
 
     ExposedDropdownMenuBox(
-        expanded = expanded && enabled, // Só expande se habilitado
+        expanded = expanded && enabled,
         onExpandedChange = { if (enabled) expanded = !expanded },
         modifier = modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(MenuAnchorType.PrimaryEditable),
+                .menuAnchor(MenuAnchorType.PrimaryEditable), // Corrigido para PrimaryEditable
             readOnly = true,
-            value = selectedOptionText,
+            value = currentSelectedOptionText, // Usa a string resolvida
             onValueChange = {},
             label = { Text(stringResource(labelResId)) },
             leadingIcon = leadingIconProvider?.let { provider ->
@@ -90,23 +101,13 @@ fun <T> AppExposedDropdownMenu(
             onDismissRequest = { expanded = false }
         ) {
             options.forEach { option ->
-                val optionText = optionToString(option)
                 DropdownMenuItem(
-                    text = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            leadingIconProvider?.let { provider ->
-                                provider(option)?.let { icon ->
-                                    Icon(imageVector = icon, contentDescription = null)
-                                    Spacer(Modifier.width(8.dp))
-                                }
-                            }
-                            Text(optionText)
-                        }
-                    },
+                    text = { dropdownItemContent(option) }, // Usa o novo Composable para o item
                     onClick = {
                         onOptionSelected(option)
                         expanded = false
                     },
+                    // Não precisa de leadingIcon aqui, pois o text já pode incluir um Row com Icon e Text
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                 )
             }

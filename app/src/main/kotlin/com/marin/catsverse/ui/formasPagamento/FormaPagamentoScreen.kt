@@ -26,9 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.marin.catsverse.data.entity.FormaPagamento
 import com.marin.catsverse.ui.Icones
-import com.marin.catsverse.ui.common.UiEvent
-import com.marin.catsverse.ui.common.AppExposedDropdownMenu
-import com.marin.catsverse.ui.common.AppOutlinedTextField
+import com.marin.catsverse.dominio.UiEvent
+import com.marin.catsverse.dominio.AppExposedDropdownMenu
+import com.marin.catsverse.dominio.AppOutlinedTextField
 import com.marin.catsverse.dominio.IconeFormaPagamento
 import kotlinx.coroutines.flow.collectLatest
 
@@ -247,15 +247,36 @@ private fun FormaPagamentoInputForm(
             Spacer(modifier = Modifier.height(16.dp))
 
             AppExposedDropdownMenu(
-                labelResId = R.string.label_icone,
+                labelResId = R.string.label_icone, // Ou uma string mais específica como R.string.label_icone_forma_pagamento
                 options = IconeFormaPagamento.entries,
                 selectedOption = IconeFormaPagamento.fromName(formState.iconeNome),
                 onOptionSelected = { enumEntry -> onIconeChange(enumEntry.name) },
-                optionToString = { enumEntry -> enumEntry.name.replaceFirstChar { it.titlecase() } },
+                // Novo parâmetro: como a opção SELECIONADA deve ser exibida como STRING no TextField
+                selectedOptionToString = { enumEntry ->
+                    // Você pode usar displayNameResId se quiser o texto traduzido,
+                    // ou o .name formatado como você tinha antes.
+                    // stringResource(id = enumEntry.displayNameResId) // Opção 1: Usar displayNameResId
+                    enumEntry.name.replaceFirstChar { it.titlecase() } // Opção 2: Usar o nome da enum formatado
+                },
+                // Novo parâmetro: como CADA ITEM no menu suspenso deve ser RENDERIZADO
+                dropdownItemContent = { enumEntry ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = enumEntry.icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp) // Opcional: ajustar tamanho do ícone no item
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            // stringResource(id = enumEntry.displayNameResId) // Opção 1
+                            enumEntry.name.replaceFirstChar { it.titlecase() } // Opção 2
+                        )
+                    }
+                },
+                // Este leadingIconProvider é para o ÍCONE NO TEXTFIELD PRINCIPAL quando o menu está fechado
                 leadingIconProvider = { enumEntry -> enumEntry.icon },
                 enabled = !formState.isSaving
             )
-            // Se houver erro específico para ícone, exibir aqui
             formState.iconeErrorResId?.let { errorId ->
                 Text(
                     text = stringResource(errorId),
@@ -264,7 +285,6 @@ private fun FormaPagamentoInputForm(
                     modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                 )
             }
-
 
             Spacer(modifier = Modifier.height(24.dp))
 

@@ -6,7 +6,7 @@ package com.marin.catsverse.utils
 
 import androidx.room.TypeConverter
 import com.marin.catsverse.dominio.StatusTransacao
-import com.marin.catsverse.dominio.TipoTransacao
+import com.marin.catsverse.dominio.TipoReceitaDespesa
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -56,21 +56,21 @@ class Conversores {
     }
 
     // =====================================================================
-    // Conversores para o enum TipoTransacao
+    // Conversores para o enum TipoReceitaDespesa
     // =====================================================================
     /**
-     * Converte uma String para o enum TipoTransacao.
+     * Converte uma String para o enum TipoReceitaDespesa.
      */
     @TypeConverter
-    fun fromString(valor: String?): TipoTransacao? {
-        return valor?.let { TipoTransacao.valueOf(it) }
+    fun fromString(valor: String?): TipoReceitaDespesa? {
+        return valor?.let { TipoReceitaDespesa.valueOf(it) }
     }
 
     /**
-     * Converte o enum TipoTransacao para uma String (o nome do enum).
+     * Converte o enum TipoReceitaDespesa para uma String (o nome do enum).
      */
     @TypeConverter
-    fun toString(tipo: TipoTransacao?): String? {
+    fun toString(tipo: TipoReceitaDespesa?): String? {
         return tipo?.name
     }
 

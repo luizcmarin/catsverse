@@ -14,7 +14,7 @@ import com.marin.catsverse.ui.Icones
  * Enumeração que define os tipos possíveis para transações:
  * [DESPESA] para saídas e [RECEITA] para entradas.
  */
-enum class TipoTransacao(@StringRes val displayNameResId: Int) {
+enum class TipoReceitaDespesa(@StringRes val displayNameResId: Int) {
     DESPESA(R.string.label_despesa),
     RECEITA(R.string.label_receita)
 }
@@ -52,6 +52,30 @@ enum class IconeFormaPagamento(
 
     companion object {
         fun fromName(name: String?): IconeFormaPagamento {
+            return entries.find { it.name.equals(name, ignoreCase = true) } ?: CARTEIRA // Fallback
+        }
+    }
+}
+
+/**
+ * Enumeração que representa os ícones disponíveis para categorias.
+ *
+ * @property displayNameResId O ID do recurso de string para o nome de exibição localizável.
+ * @property icon A referência [ImageVector] do ícone correspondente no objeto [Icones].
+ */
+enum class IconeCategoria(
+    @StringRes val displayNameResId: Int,
+    val icon: ImageVector
+) {
+    CARTEIRA(R.string.label_forma_pagamento_carteira, Icones.Categoria),
+    DINHEIRO(R.string.label_forma_pagamento_dinheiro, Icones.Dinheiro),
+    CARTAO_CREDITO(R.string.label_forma_pagamento_cartao_credito, Icones.CartaoCredito),
+    PIX(R.string.label_forma_pagamento_pix, Icones.QrCode),
+    BOLETO(R.string.label_forma_pagamento_boleto, Icones.Boleto),
+    DEPOSITO(R.string.label_forma_pagamento_transferencia, Icones.Transferencia);
+
+    companion object {
+        fun fromName(name: String?): IconeCategoria {
             return entries.find { it.name.equals(name, ignoreCase = true) } ?: CARTEIRA // Fallback
         }
     }

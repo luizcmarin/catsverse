@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 /**
- * Ação para obter todas as formas de pagamento do banco de dados em um fluxo.
+ * Ação para obter todos os registros do banco de dados em um fluxo.
  */
 class ObterTodasFormasPagamentoAction @Inject constructor(
     private val repository: FormaPagamentoRepository
@@ -22,7 +22,7 @@ class ObterTodasFormasPagamentoAction @Inject constructor(
 }
 
 /**
- * Ação para salvar uma nova forma de pagamento no banco de dados.
+ * Ação para salvar um registro no banco de dados.
  *
  * @throws ExcecaoApp se o nome da forma de pagamento for inválido.
  */
@@ -38,7 +38,7 @@ class SalvarFormaPagamentoAction @Inject constructor(
 }
 
 /**
- * Ação para excluir uma forma de pagamento do banco de dados.
+ * Ação para excluir um registro do banco de dados.
  */
 class ExcluirFormaPagamentoAction @Inject constructor(
     private val repository: FormaPagamentoRepository

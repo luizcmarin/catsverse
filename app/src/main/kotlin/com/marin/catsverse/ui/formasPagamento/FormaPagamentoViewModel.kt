@@ -7,19 +7,18 @@
 // =============================================================================
 package com.marin.catsverse.ui.formasPagamento
 
-import android.util.Log // Adicionado para logging em caso de erro inesperado
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.marin.catsverse.R
 import com.marin.catsverse.data.entity.FormaPagamento
-// Importe sua nova classe de exceção unificada
-import com.marin.catsverse.dominio.ExcecaoApp // <<< ADICIONE/VERIFIQUE ESTE IMPORT
+import com.marin.catsverse.dominio.ExcecaoApp
 import com.marin.catsverse.dominio.IconeFormaPagamento
 import com.marin.catsverse.dominio.ObterTodasFormasPagamentoAction
 import com.marin.catsverse.dominio.SalvarFormaPagamentoAction
 import com.marin.catsverse.dominio.ExcluirFormaPagamentoAction
-import com.marin.catsverse.ui.common.UiEvent
+import com.marin.catsverse.dominio.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -110,7 +109,7 @@ class FormaPagamentoViewModel @Inject constructor(
                     // Para erros de carregamento, podemos emitir um evento para a UI
                     // ou atualizar o uiState com uma mensagem de erro global.
                     // Se a ação lançar ExcecaoApp, podemos ser mais específicos.
-                    val errorResId = if (e is ExcecaoApp) e.stringResId else R.string.erro_carregar_registro
+                    val errorResId = if (e is ExcecaoApp) e.stringResId else R.string.erro_carregar_registros
                     _uiState.update { it.copy(isLoading = false, globalErrorResId = errorResId) }
                     if (e !is ExcecaoApp) { // Log apenas para exceções não esperadas (ExcecaoApp já pode ter sido logada na origem)
                         Log.e("FormaPagamentoVM", "Erro ao carregar formas de pagamento", e)
@@ -175,7 +174,7 @@ class FormaPagamentoViewModel @Inject constructor(
 
                 salvarFormaPagamentoAction(formaPagamentoParaSalvar)
 
-                _eventFlow.emit(UiEvent.ShowSnackbar(R.string.mensagem_sucesso))
+                _eventFlow.emit(UiEvent.ShowSnackbar(R.string.mensagem_sucesso_salvar))
                 limparFormulario()
 
             } catch (e: ExcecaoApp) {

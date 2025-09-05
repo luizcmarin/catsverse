@@ -9,6 +9,8 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.marin.catsverse.AppInfo
+import com.marin.catsverse.data.dao.CategoriaDao
+import com.marin.catsverse.data.entity.CategoriaEntity
 import com.marin.catsverse.data.dao.FormaPagamentoDao
 import com.marin.catsverse.data.entity.FormaPagamentoEntity
 import com.marin.catsverse.utils.Conversores
@@ -30,6 +32,7 @@ import com.marin.catsverse.utils.Conversores
 @Database(
     entities = [
         FormaPagamentoEntity::class,
+        CategoriaEntity::class,
         // Adicione outras entidades aqui conforme necessário
     ],
     version = 1,
@@ -39,6 +42,7 @@ import com.marin.catsverse.utils.Conversores
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun formaPagamentoDao(): FormaPagamentoDao
+    abstract fun categoriaDao(): CategoriaDao
     // Adicione outros DAOs abstratos aqui conforme necessário
 
 }

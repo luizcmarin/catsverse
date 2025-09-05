@@ -22,7 +22,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
-// Remover Text se não for usado diretamente aqui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -101,7 +100,8 @@ class MainActivity : ComponentActivity() {
             }
 
             CatsVerseTheme(
-                darkTheme = aplicarTemaEscuro
+                darkTheme = aplicarTemaEscuro,
+                dynamicColor = true
             ) {
                 var showLottieSplash by remember { mutableStateOf(true) }
 
@@ -115,7 +115,6 @@ class MainActivity : ComponentActivity() {
                         }
                     )
                 } else {
-                    // Chama a sua função MainScreen REAL definida em com.marin.catsverse.MainScreen.kt
                     MainScreen()
                 }
             }

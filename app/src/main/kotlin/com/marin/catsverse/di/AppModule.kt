@@ -7,7 +7,6 @@ package com.marin.catsverse.di
 import android.content.Context
 import androidx.room.Room
 import com.marin.catsverse.data.AppDatabase
-import com.marin.catsverse.data.dao.FormaPagamentoDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,6 +14,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import com.marin.catsverse.data.PreferenciasRepository
+import com.marin.catsverse.data.dao.CategoriaDao
+import com.marin.catsverse.data.dao.FormaPagamentoDao
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -43,7 +44,7 @@ object AppModule {
     }
 
     /**
-     * Fornece uma instância singleton de Preferências do Usuário.
+     * Fornece uma instância singleton de Preferências.
      */
     @Singleton
     @Provides
@@ -60,12 +61,13 @@ object AppModule {
         return appDatabase.formaPagamentoDao()
     }
 
-    // Adicione outros provedores de DAO aqui conforme necessário
-    // Exemplo:
-    // @Provides
-    // @Singleton
-    // fun provideOutroDao(appDatabase: AppDatabase): OutroDao {
-    //     return appDatabase.outroDao()
-    // }
+    /**
+     * Fornece uma instância singleton de CategoriaDao.
+     */
+    @Provides
+    @Singleton
+    fun provideCategoriaDao(appDatabase: AppDatabase): CategoriaDao {
+        return appDatabase.categoriaDao()
+    }
 
 }

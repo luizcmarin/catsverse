@@ -5,8 +5,13 @@
     <string name="erro_nome_vazio">O nome não pode ser vazio.</string>
     <string name="erro_descricao_vazio">A descrição não pode ser vazia.</string>
     <string name="erro_valor_positivo">O valor deve ser maior que zero.</string>
-    <string name="erro_carregar_registro">Erro ao carregar o registro.</string>
     <string name="erro_salvar">Não foi possível salvar o registro. Verifique os dados e tente novamente.</string>
     <string name="erro_excluir">Não foi possível excluir o registro. Tente novamente mais tarde.</string>
     <string name="erro_operacao_falhou">Erro na operação</string>
+    <string name="erro_carregar_registros">Erro ao carregar os registros.</string>
+    <string name="erro_categoria_cor_obrigatoria_para_despesa">A cor é obrigatória para categorias do tipo Despesa.</string>
+    <string name="erro_categoria_cor_obrigatoria_para_receita">A cor é obrigatória para categorias do tipo Receita.</string>
+    <string name="erro_categoria_tipo_invalido">Selecione um tipo válido para a categoria.</string>
+    <string name="erro_icone_invalido">Selecione um ícone.</string>
+    <string name="erro_cor_invalida">A cor selecionada é inválida.</string>
 </resources>
